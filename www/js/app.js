@@ -776,6 +776,9 @@ const settingsManager = {
 // ANDROID NATIVE INTEGRATION
 // ==========================================
 window.handleAndroidBack = function() {
+    if (window.androidOnboarding && window.androidOnboarding.isActive) {
+        return window.androidOnboarding.handleBack();
+    }
     const modals = Array.from(document.querySelectorAll('.modal:not(.hidden)'));
     if (modals.length > 0) {
         const topModal = modals[modals.length - 1];
@@ -811,6 +814,125 @@ window.handleAndroidBack = function() {
 
 // Execute Android specific injections safely if running natively
 if (window.Capacitor && window.Capacitor.getPlatform() === 'android') {
+    // --- ANDROID ONBOARDING ---
+    window.androidOnboarding = {
+        slideIndex: 0,
+        isActive: false,
+        init() {
+            if (localStorage.getItem('roast_onboarding_done') === 'true') return false;
+            this.isActive = true;
+            document.addEventListener('DOMContentLoaded', () => {
+                setTimeout(() => {
+                    const home = document.getElementById('view-home');
+                    if(home) { home.classList.add('hidden'); home.classList.remove('active'); }
+                    const nav = document.querySelector('.navbar');
+                    if(nav) nav.style.display = 'none';
+                    const botNav = document.querySelector('.android-bottom-nav');
+                    if(botNav) botNav.style.display = 'none';
+                    
+                    this.injectUI();
+                    this.bindEvents();
+                }, 50);
+            });
+            return true;
+        },
+        injectUI() {
+            const obHTML = `
+                <section id="view-onboarding" class="view active" style="position:fixed; inset:0; z-index:9999; background:var(--bg-base); display:flex; flex-direction:column; padding-top:env(safe-area-inset-top); padding-bottom:env(safe-area-inset-bottom);">
+                    <div style="display:flex; justify-content:flex-end; padding:1.5rem;">
+                        <button id="btn-ob-skip" class="tech-mono text-muted" style="background:none; border:none; padding:0.5rem; font-size:0.85rem; cursor:pointer;">SKIP</button>
+                    </div>
+                    
+                    <div id="ob-slides" style="flex:1; position:relative; overflow:hidden; display:flex;">
+                        <!-- Slide 1 -->
+                        <div class="ob-slide fade-in active" style="position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:2rem; width:100%;">
+                            <h1 class="huge-title" style="font-size:2.5rem;"><span class="highlight-acid skew-text">WHAT KIND OF</span><br>SPENDER ARE YOU?</h1>
+                            <p class="text-muted mt-4">Discover your financial personality, get your chaos score, and find out exactly how badly we can roast you.</p>
+                            <div class="glossy-panel mt-4" style="width:160px; height:200px; display:flex; flex-direction:column; align-items:center; justify-content:center; opacity:0.8; border-radius:12px;">
+                                <i data-lucide="scan-line" style="width:48px;height:48px;color:var(--accent-acid);margin-bottom:1rem;"></i>
+                                <div style="width:80%;height:4px;background:rgba(255,255,255,0.2);border-radius:2px;margin-bottom:0.5rem;"></div>
+                                <div style="width:60%;height:4px;background:rgba(255,255,255,0.2);border-radius:2px;"></div>
+                            </div>
+                        </div>
+                        
+                        <!-- Slide 2 -->
+                        <div class="ob-slide fade-in hidden" style="position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:2rem; width:100%;">
+                            <h1 class="huge-title" style="font-size:2.5rem;">YOUR MONEY HAS<br><span class="highlight-acid skew-text">A PERSONALITY.</span></h1>
+                            <p class="text-muted mt-4">Answer a few quick questions and we'll identify your financial personality.</p>
+                            <div class="glossy-panel mt-4" style="padding:1.5rem; width:100%; max-width:280px; text-align:left; border-radius:8px;">
+                                <div class="tech-mono highlight-acid mb-2" style="font-size:0.7rem;">FINANCIAL CHAOS — 92/100</div>
+                                <h2 style="font-size:1.2rem; margin-bottom:0.5rem; font-family:var(--font-display); font-weight:900;">THE FINANCIAL MENACE</h2>
+                                <p style="font-size:0.85rem; font-style:italic; color:var(--text-muted);">"Your wallet doesn't have a spending problem. It has a survival problem."</p>
+                            </div>
+                        </div>
+                        
+                        <!-- Slide 3 -->
+                        <div class="ob-slide fade-in hidden" style="position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:2rem; width:100%;">
+                            <h1 class="huge-title" style="font-size:2.5rem;">YOUR DATA<br><span class="highlight-acid skew-text">STAYS YOURS.</span></h1>
+                            <p class="text-muted mt-4 mb-4">Your quiz answers and financial data are processed locally on your device.</p>
+                            <div class="status-dot safe" style="width:24px;height:24px; box-shadow:0 0 20px #00ff66; margin:0 auto 1rem;"></div>
+                            <div class="tech-mono" style="color:#00ff66;">100% LOCAL PROCESSING</div>
+                        </div>
+                    </div>
+                    
+                    <div style="padding:2rem; display:flex; flex-direction:column; align-items:center; gap:1.5rem;">
+                        <div class="ob-dots" style="display:flex; gap:0.5rem;">
+                            <div class="ob-dot" style="width:8px;height:8px;border-radius:50%;background:var(--accent-acid);"></div>
+                            <div class="ob-dot" style="width:8px;height:8px;border-radius:50%;background:var(--border-light);"></div>
+                            <div class="ob-dot" style="width:8px;height:8px;border-radius:50%;background:var(--border-light);"></div>
+                        </div>
+                        <button id="btn-ob-main" class="action-button primary-cta w-full pulse-glow"><span>NEXT</span></button>
+                    </div>
+                </section>
+            `;
+            document.body.insertAdjacentHTML('beforeend', obHTML);
+            if (window.lucide) window.lucide.createIcons();
+        },
+        goToSlide(index) {
+            const slides = document.querySelectorAll('.ob-slide');
+            const dots = document.querySelectorAll('.ob-dot');
+            const btnSpan = document.querySelector('#btn-ob-main span');
+            
+            slides[this.slideIndex].classList.add('hidden');
+            slides[this.slideIndex].classList.remove('active');
+            dots[this.slideIndex].style.background = 'var(--border-light)';
+            
+            this.slideIndex = index;
+            
+            slides[this.slideIndex].classList.remove('hidden');
+            slides[this.slideIndex].classList.add('active');
+            dots[this.slideIndex].style.background = 'var(--accent-acid)';
+            
+            btnSpan.textContent = this.slideIndex === 2 ? 'GET STARTED' : 'NEXT';
+        },
+        bindEvents() {
+            document.getElementById('btn-ob-main').onclick = () => {
+                if (this.slideIndex < 2) this.goToSlide(this.slideIndex + 1);
+                else this.finish();
+            };
+            document.getElementById('btn-ob-skip').onclick = () => this.finish();
+        },
+        finish() {
+            localStorage.setItem('roast_onboarding_done', 'true');
+            this.isActive = false;
+            const obView = document.getElementById('view-onboarding');
+            if (obView) obView.remove();
+            
+            const botNav = document.querySelector('.android-bottom-nav');
+            if (botNav) botNav.style.display = 'flex';
+            app.switchView('home');
+        },
+        handleBack() {
+             if (this.slideIndex > 0) {
+                 this.goToSlide(this.slideIndex - 1);
+                 return true;
+             }
+             // Returns false, which allows normal exit
+             return false;
+        }
+    };
+    window.androidOnboarding.init();
+
     document.addEventListener('DOMContentLoaded', () => {
         document.body.classList.add('android-native-app');
         
@@ -866,6 +988,20 @@ if (window.Capacitor && window.Capacitor.getPlatform() === 'android') {
                 }
             };
             actionStack.insertBefore(saveBtn, document.getElementById('btn-restart'));
+        }
+
+        // Inject Dev Reset Onboarding Button inside Danger Zone
+        const dangerRows = document.querySelector('#view-settings .text-danger');
+        if (dangerRows && dangerRows.nextElementSibling) {
+             const resetObBtn = document.createElement('button');
+             resetObBtn.className = 'action-button outline mt-2 w-full';
+             resetObBtn.style.color = '#fff';
+             resetObBtn.innerHTML = '<span>RESET ONBOARDING (DEV)</span>';
+             resetObBtn.onclick = () => {
+                 localStorage.removeItem('roast_onboarding_done');
+                 alert('Onboarding status reset. Restart app to see the onboarding flow.');
+             };
+             dangerRows.nextElementSibling.insertAdjacentElement('afterend', resetObBtn);
         }
         
         if (window.lucide) window.lucide.createIcons();
