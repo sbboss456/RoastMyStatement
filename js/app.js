@@ -348,6 +348,11 @@ const app = {
             document.getElementById('normal-diagnosis-msg').classList.add('hidden');
         }
 
+        // Reset image/html visibility states for re-renders
+        const existingImg = document.getElementById('generated-share-img');
+        if (existingImg) existingImg.remove();
+        document.getElementById('share-card-element').style.display = 'flex';
+
         // Calculate a main aggregated Financial Score (e.g., Chaos + Impulse - Saving)
         // Scaled to 0-100 logically
         let mainScore = Math.round((scores.chaos * 1.2 + scores.impulse * 0.8 + (100 - scores.saving)) / 3);
@@ -400,6 +405,13 @@ const app = {
         const cardTarget = document.getElementById('share-card-element');
         if (!window.html2canvas) return;
         
+        // Ensure any previous generated image is removed
+        const existingImg = document.getElementById('generated-share-img');
+        if (existingImg) existingImg.remove();
+        
+        // Make the original HTML card visible for canvas rendering
+        cardTarget.style.display = 'flex';
+        
         // Standardize card for image generation to avoid glitches
         const originalTransform = cardTarget.style.transform;
         cardTarget.style.transform = 'none';
@@ -414,6 +426,24 @@ const app = {
             canvas.toBlob(blob => {
                 appState.shareImageBlob = blob;
                 this.updateShareButton();
+                
+                // UX UPGRADE: Overlay the generated image so users can natively long-press to save on mobile
+                const imgUrl = URL.createObjectURL(blob);
+                const imgElement = document.createElement('img');
+                imgElement.id = 'generated-share-img';
+                imgElement.src = imgUrl;
+                imgElement.className = 'share-card';
+                imgElement.style.width = '100%';
+                imgElement.style.display = 'block';
+                imgElement.style.objectFit = 'contain';
+                imgElement.style.position = 'relative';
+                imgElement.style.zIndex = '50';
+                imgElement.alt = 'Financial Personality Share Card';
+                
+                // Hide the HTML card and show the PNG Image
+                cardTarget.style.display = 'none';
+                cardTarget.parentNode.appendChild(imgElement);
+
             }, 'image/png');
         }).catch(err => console.error('Image generation failed', err));
     },
