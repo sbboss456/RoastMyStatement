@@ -609,10 +609,8 @@ const financeManager = {
     }
 };
 
-app.finance = financeManager;
-
 // ==========================================
-// APP LOGIC
+// MAIN APP LOGIC
 // ==========================================
 const app = {
     views: {},
@@ -1165,4 +1163,5 @@ const app = {
     }
 };
 
+app.finance = financeManager;
 app.init();
