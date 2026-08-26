@@ -567,7 +567,7 @@ const financeManager = {
         // Render Insights & Chaos Score
         const insC = document.getElementById('finance-insights-content');
         if (monthTxns.length === 0) {
-            insC.innerHTML = "<p class="text-muted">Add transactions to generate insights.</p>";
+            insC.innerHTML = '<p class="text-muted">Add transactions to generate insights.</p>';
             document.getElementById('live-chaos-score').textContent = '0 / 100';
         } else {
             // Find biggest drain
