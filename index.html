@@ -53,8 +53,8 @@
             ROAST MY STATEMENT
         </div>
         <div class="nav-links">
-            <a href="#" class="hover-underline" onclick="app.resetQuiz()">Restart</a>
-            <a href="#privacy" class="hover-underline">Privacy</a>
+            <a href="#" class="hover-underline" onclick="app.switchView('home')">Quiz</a>
+            <a href="#" class="hover-underline" onclick="app.finance.openDashboard()">Dashboard</a>
         </div>
     </nav>
 
@@ -273,6 +273,143 @@
             </div>
         </section>
 
+        <!-- ==========================================
+             VIEW: FINANCIAL MANAGEMENT (DASHBOARD)
+             ========================================== -->
+        <section id="view-finance" class="view hidden">
+            
+            <!-- Privacy Banner -->
+            <div class="privacy-note mb-4" style="margin-top: 0; padding: 1rem;">
+                <div class="privacy-header">
+                    <div class="status-dot safe"></div>
+                    <strong>LOCAL ONLY</strong>
+                </div>
+                <p>Your financial data stays exclusively on this device.</p>
+            </div>
+
+            <!-- Empty State -->
+            <div id="finance-empty-state" class="hidden" style="text-align: center; padding: 4rem 1rem;">
+                <h1 class="huge-title" style="font-size: 3rem;">LET'S GET YOUR MONEY ORGANIZED.</h1>
+                <p class="text-muted mt-2">Add your first transaction and we'll start tracking the damage.</p>
+                <div class="action-buttons-stack mt-4" style="align-items: center;">
+                    <button class="action-button primary-cta pulse-glow" onclick="app.finance.openTxnModal()">
+                        <span>+ ADD TRANSACTION</span>
+                    </button>
+                    <button class="action-button subtle outline mt-2" onclick="app.finance.openImportModal()">
+                        <span>IMPORT CSV STATEMENT</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Dashboard Content -->
+            <div id="finance-dashboard-content" class="hidden">
+                
+                <!-- Month Selector & Header -->
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem;">
+                    <div>
+                        <span class="tech-label highlight-acid"><span class="blink">></span> FINANCIAL MANAGEMENT</span>
+                        <h2 class="mt-2" id="finance-month-display">MARCH 2024</h2>
+                    </div>
+                    <div style="display: flex; gap: 0.5rem; align-items: center;">
+                        <button class="action-button outline" style="padding: 0.5rem;" onclick="app.finance.changeMonth(-1)"><i data-lucide="chevron-left"></i></button>
+                        <button class="action-button outline" style="padding: 0.5rem;" onclick="app.finance.changeMonth(1)"><i data-lucide="chevron-right"></i></button>
+                    </div>
+                </div>
+
+                <!-- KPI Cards -->
+                <div class="kpi-grid mb-4">
+                    <div class="kpi-card">
+                        <span class="tech-label"><i data-lucide="arrow-down-circle" style="width:14px; height:14px; display:inline-block; vertical-align:middle; color: #00ff66;"></i> INCOME</span>
+                        <div class="kpi-value" id="kpi-income">₹0</div>
+                    </div>
+                    <div class="kpi-card">
+                        <span class="tech-label"><i data-lucide="arrow-up-circle" style="width:14px; height:14px; display:inline-block; vertical-align:middle; color: var(--accent-danger);"></i> TOTAL SPENDING</span>
+                        <div class="kpi-value highlight-danger" id="kpi-spent">₹0</div>
+                    </div>
+                    <div class="kpi-card">
+                        <span class="tech-label"><i data-lucide="wallet" style="width:14px; height:14px; display:inline-block; vertical-align:middle; color: var(--accent-acid);"></i> REMAINING</span>
+                        <div class="kpi-value highlight-acid" id="kpi-remaining">₹0</div>
+                    </div>
+                    <div class="kpi-card">
+                        <span class="tech-label"><i data-lucide="piggy-bank" style="width:14px; height:14px; display:inline-block; vertical-align:middle;"></i> SAVING RATE</span>
+                        <div class="kpi-value" id="kpi-rate">0%</div>
+                    </div>
+                </div>
+
+                <!-- Quick Actions -->
+                <div class="flex-row gap-2 mb-4">
+                    <button class="action-button primary-cta" onclick="app.finance.openTxnModal()" style="max-width: 250px;">
+                        <span>+ ADD TRANSACTION</span>
+                    </button>
+                    <button class="action-button outline subtle" onclick="app.finance.openImportModal()" style="max-width: 200px;">
+                        <span>IMPORT CSV</span>
+                    </button>
+                </div>
+
+                <!-- Dash Layout -->
+                <div class="dash-layout">
+                    <!-- Left Col -->
+                    <div class="dash-col">
+                        
+                        <!-- Insights -->
+                        <div class="roast-box mb-4">
+                            <div class="roast-header">
+                                <span class="status-dot warning"></span>
+                                <span class="tech-label">YOUR MONEY THIS MONTH</span>
+                            </div>
+                            <div id="finance-insights-content">
+                                <!-- JS injected insights -->
+                            </div>
+                            <!-- Live Chaos Score -->
+                            <div class="mt-4" style="border-top: 1px solid var(--border-light); padding-top: 1rem;">
+                                <span class="tech-mono text-muted">LIVE FINANCIAL CHAOS</span>
+                                <div class="huge-title highlight-acid" style="font-size: 2.5rem;" id="live-chaos-score">0 / 100</div>
+                            </div>
+                        </div>
+
+                        <!-- Txn List -->
+                        <div class="glossy-panel p-4">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                                <h3>RECENT LOGS</h3>
+                            </div>
+                            <div class="txn-list" id="txn-list-container">
+                                <!-- JS injected transactions -->
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <!-- Right Col -->
+                    <div class="dash-col">
+                        
+                        <!-- Budgets -->
+                        <div class="glossy-panel p-4 mb-4">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                                <h3>MONTHLY BUDGETS</h3>
+                                <button class="action-button outline subtle" style="padding: 0.25rem 1rem; max-width: max-content;" onclick="app.finance.openBudgetModal()"><span>+ SET</span></button>
+                            </div>
+                            <div id="budget-list-container">
+                                <!-- JS injected budgets -->
+                            </div>
+                        </div>
+
+                        <!-- Savings Goals -->
+                        <div class="glossy-panel p-4">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                                <h3>SAVINGS GOALS</h3>
+                                <button class="action-button outline subtle" style="padding: 0.25rem 1rem; max-width: max-content;" onclick="app.finance.openSavingsModal()"><span>+ ADD</span></button>
+                            </div>
+                            <div id="savings-list-container">
+                                <!-- JS injected savings goals -->
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
     </main>
 
     <!-- ==========================================
@@ -314,6 +451,136 @@
                 <button class="action-button outline w-full mt-2 subtle" id="btn-copy-challenge">
                     <span id="copy-btn-text">COPY CHALLENGE LINK</span>
                 </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==========================================
+         MODALS: FINANCE
+         ========================================== -->
+    <!-- TXN MODAL -->
+    <div id="finance-txn-modal" class="modal hidden">
+        <div class="modal-backdrop" onclick="app.finance.closeModals()"></div>
+        <div class="modal-content glossy-panel">
+            <button class="modal-close" onclick="app.finance.closeModals()">✕</button>
+            <div class="modal-header">
+                <span class="tech-label highlight-acid">> LOG TRANSACTION</span>
+            </div>
+            <div class="modal-body mt-4">
+                <form id="txn-form" onsubmit="event.preventDefault(); app.finance.saveTxn();">
+                    <input type="hidden" id="txn-id">
+                    <div class="input-group mb-2">
+                        <label class="tech-mono text-muted mb-2 display-block">TYPE</label>
+                        <select id="txn-type" class="tech-input mb-4" onchange="app.finance.updateCategoryOptions()">
+                            <option value="expense">Expense</option>
+                            <option value="income">Income</option>
+                        </select>
+                    </div>
+                    <div class="input-group mb-2">
+                        <label class="tech-mono text-muted mb-2 display-block">AMOUNT (₹)</label>
+                        <input type="number" id="txn-amount" class="tech-input mb-4" required min="1" step="0.01">
+                    </div>
+                    <div class="input-group mb-2">
+                        <label class="tech-mono text-muted mb-2 display-block">CATEGORY</label>
+                        <select id="txn-category" class="tech-input mb-4" required>
+                            <!-- Populated via JS -->
+                        </select>
+                    </div>
+                    <div class="input-group mb-2">
+                        <label class="tech-mono text-muted mb-2 display-block">DATE</label>
+                        <input type="date" id="txn-date" class="tech-input mb-4" required>
+                    </div>
+                    <div class="input-group mb-4">
+                        <label class="tech-mono text-muted mb-2 display-block">NOTE (OPTIONAL)</label>
+                        <input type="text" id="txn-note" class="tech-input" placeholder="e.g. Swiggy order">
+                    </div>
+                    <button type="submit" class="action-button primary-cta w-full pulse-glow"><span>SAVE LOG</span></button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- BUDGET MODAL -->
+    <div id="finance-budget-modal" class="modal hidden">
+        <div class="modal-backdrop" onclick="app.finance.closeModals()"></div>
+        <div class="modal-content glossy-panel">
+            <button class="modal-close" onclick="app.finance.closeModals()">✕</button>
+            <div class="modal-header">
+                <span class="tech-label highlight-acid">> SET BUDGET LIMIT</span>
+            </div>
+            <div class="modal-body mt-4">
+                <form id="budget-form" onsubmit="event.preventDefault(); app.finance.saveBudget();">
+                    <div class="input-group mb-2">
+                        <label class="tech-mono text-muted mb-2 display-block">CATEGORY</label>
+                        <select id="budget-category" class="tech-input mb-4" required>
+                            <option value="Food">Food</option>
+                            <option value="Shopping">Shopping</option>
+                            <option value="Transport">Transport</option>
+                            <option value="Entertainment">Entertainment</option>
+                            <option value="Subscriptions">Subscriptions</option>
+                            <option value="Bills">Bills</option>
+                            <option value="Education">Education</option>
+                            <option value="Health">Health</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                    <div class="input-group mb-4">
+                        <label class="tech-mono text-muted mb-2 display-block">LIMIT (₹)</label>
+                        <input type="number" id="budget-amount" class="tech-input" required min="1" step="0.01">
+                    </div>
+                    <button type="submit" class="action-button primary-cta w-full"><span>SAVE BUDGET</span></button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- SAVINGS MODAL -->
+    <div id="finance-savings-modal" class="modal hidden">
+        <div class="modal-backdrop" onclick="app.finance.closeModals()"></div>
+        <div class="modal-content glossy-panel">
+            <button class="modal-close" onclick="app.finance.closeModals()">✕</button>
+            <div class="modal-header">
+                <span class="tech-label highlight-acid">> SAVINGS GOAL</span>
+            </div>
+            <div class="modal-body mt-4">
+                <form id="savings-form" onsubmit="event.preventDefault(); app.finance.saveSavingsGoal();">
+                    <input type="hidden" id="savings-id">
+                    <div class="input-group mb-2">
+                        <label class="tech-mono text-muted mb-2 display-block">GOAL NAME</label>
+                        <input type="text" id="savings-name" class="tech-input mb-4" required placeholder="e.g. New Phone">
+                    </div>
+                    <div class="input-group mb-2">
+                        <label class="tech-mono text-muted mb-2 display-block">TARGET AMOUNT (₹)</label>
+                        <input type="number" id="savings-target" class="tech-input mb-4" required min="1" step="0.01">
+                    </div>
+                    <div class="input-group mb-4">
+                        <label class="tech-mono text-muted mb-2 display-block">CURRENT SAVED (₹)</label>
+                        <input type="number" id="savings-current" class="tech-input" required min="0" step="0.01" value="0">
+                    </div>
+                    <button type="submit" class="action-button primary-cta w-full"><span>SAVE GOAL</span></button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- CSV IMPORT MODAL -->
+    <div id="finance-import-modal" class="modal hidden">
+        <div class="modal-backdrop" onclick="app.finance.closeModals()"></div>
+        <div class="modal-content glossy-panel" style="max-width: 600px;">
+            <button class="modal-close" onclick="app.finance.closeModals()">✕</button>
+            <div class="modal-header mb-4">
+                <span class="tech-label highlight-acid">> BATCH IMPORT</span>
+                <h2 class="mt-2">CSV STATEMENT ENGINE</h2>
+            </div>
+            
+            <div class="uploader-card" id="finance-drop-zone" style="max-width: 100%; border-style: dashed; padding: 2rem;">
+                <input type="file" id="finance-csv-input" accept=".csv" hidden>
+                <div class="upload-icon-wrapper mb-2" style="text-align:center;">
+                    <i data-lucide="upload-cloud" style="width:40px; height:40px; margin: 0 auto;"></i>
+                </div>
+                <h3 class="text-center mb-2">DROP CSV HERE</h3>
+                <p class="text-muted text-center tech-mono">OR CLICK TO BROWSE</p>
+                <div class="mt-4" id="finance-csv-msg" style="text-align: center; color: var(--accent-acid); font-family: var(--font-mono);"></div>
             </div>
         </div>
     </div>

@@ -249,7 +249,52 @@ main { flex-grow: 1; width: 100%; max-width: var(--max-width); margin: 0 auto; p
 .viral-loop-box h2 { font-size: 1.5rem; }
 
 /* ==========================================================================
-   MODAL - CHALLENGE
+   FINANCIAL MANAGEMENT DASHBOARD STYLES
+   ========================================================================== */
+
+.kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; }
+.kpi-card { background: var(--bg-panel); border: 1px solid var(--border-light); padding: 1.5rem; border-radius: 8px; }
+.kpi-value { font-size: 2rem; font-family: var(--font-display); font-weight: 900; margin-top: 0.5rem; }
+.highlight-danger { color: var(--accent-danger); }
+.text-danger { color: var(--accent-danger); }
+
+.flex-row { display: flex; align-items: center; }
+.gap-2 { gap: 1rem; }
+.p-4 { padding: 1.5rem; }
+
+.dash-layout { display: flex; flex-direction: column; gap: 2rem; }
+@media (min-width: 850px) { .dash-layout { flex-direction: row; } .dash-col { flex: 1; min-width: 0; } }
+
+.txn-list { display: flex; flex-direction: column; gap: 0.5rem; }
+.txn-item { display: flex; align-items: center; justify-content: space-between; padding: 1rem; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 6px; }
+.txn-item:hover { background: rgba(255,255,255,0.05); }
+.txn-left { display: flex; align-items: center; gap: 1rem; }
+.txn-icon { width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.1); }
+.txn-details { display: flex; flex-direction: column; }
+.txn-title { font-weight: 600; font-size: 0.95rem; }
+.txn-date { font-size: 0.75rem; color: var(--text-muted); font-family: var(--font-mono); }
+.txn-right { display: flex; align-items: center; gap: 1rem; }
+.txn-amount { font-family: var(--font-mono); font-weight: 700; }
+.txn-amount.income { color: #00ff66; }
+.txn-actions button { background: none; border: none; color: var(--text-muted); cursor: pointer; padding: 0.25rem; transition: color 0.2s; }
+.txn-actions button:hover { color: white; }
+
+.budget-item, .savings-item { margin-bottom: 1.5rem; }
+.budget-header, .savings-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; }
+.budget-title, .savings-title { font-weight: 600; display: flex; align-items: center; gap: 0.5rem; }
+.budget-stats, .savings-stats { font-family: var(--font-mono); font-size: 0.8rem; color: var(--text-muted); }
+.progress-bar-bg { width: 100%; height: 8px; background: rgba(255,255,255,0.1); border-radius: 4px; overflow: hidden; position: relative; }
+.progress-bar-fill { height: 100%; border-radius: 4px; transition: width 0.4s ease; }
+.budget-overrun { background: rgba(255, 0, 68, 0.1); padding: 0.5rem; border-left: 2px solid var(--accent-danger); border-radius: 0 4px 4px 0; margin-top: 0.5rem; font-size: 0.85rem; }
+.text-center { text-align: center; }
+
+/* Modal Inputs fixes */
+select.tech-input { appearance: none; background-image: url('data:image/svg+xml;utf8,<svg fill="white" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/></svg>'); background-repeat: no-repeat; background-position: right 10px center; }
+option { background: var(--bg-base); color: var(--text-main); }
+::-webkit-calendar-picker-indicator { filter: invert(1); cursor: pointer; } 
+
+/* ==========================================================================
+   MODAL - CHALLENGE & GENERAL
    ========================================================================== */
 .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; display: flex; justify-content: center; align-items: center; z-index: 2000; padding: 1rem; }
 .modal-backdrop { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); backdrop-filter: blur(8px); }

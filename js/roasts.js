@@ -196,6 +196,38 @@ window.ROAST_LIBRARY = {
             "Plus, your attention span for shiny new things is rivaled only by a goldfish.",
             "By the way, buying things won't fix whatever is going wrong in your life."
         ]
+    },
+
+    // ---------------------------------------------------------
+    // BUDGET ROASTS (For Financial Management Dashboard)
+    // ---------------------------------------------------------
+    budget: {
+        food: [
+            "Your food budget didn't fail. You simply ignored it.",
+            "Cooking at home is basically a myth to you now.",
+            "You spend more on delivery fees than actual nutrition."
+        ],
+        shopping: [
+            "Your cart has better financial planning than you do.",
+            "You are banned from online shopping. By me. Right now.",
+            "Those 'sale' items are literally bankrupting you."
+        ],
+        subscriptions: [
+            "You're currently paying monthly for things you probably forgot existed.",
+            "Cancel your subscriptions. All of them. Start over.",
+            "Are you trying to single-handedly fund the entertainment industry?"
+        ],
+        transport: [
+            "You take an Uber for distances that could be walked in 5 minutes.",
+            "Your transportation budget is higher than a commercial pilot's.",
+            "Maybe try taking a bus? Or walking? Or just staying home."
+        ],
+        general: [
+            "Budget destroyed. Just like your future.",
+            "You treat spending limits as 'high scores' to beat.",
+            "Math isn't hard, but your spending is mathematically terrifying.",
+            "You are exactly why personal finance apps alert people."
+        ]
     }
 };
 

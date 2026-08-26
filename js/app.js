@@ -130,6 +130,488 @@ const appState = {
 };
 
 // ==========================================
+// FINANCE MANAGER (LOCAL DASHBOARD)
+// ==========================================
+const financeManager = {
+    data: {
+        transactions: [],
+        budgets: {},
+        savings: []
+    },
+    currentDate: new Date(),
+
+    init() {
+        this.loadData();
+        this.bindEvents();
+    },
+
+    loadData() {
+        const stored = localStorage.getItem('roast_finance_data');
+        if (stored) {
+            try { this.data = JSON.parse(stored); } catch(e) { console.error('Failed to load local finance data'); }
+        }
+    },
+
+    saveData() {
+        localStorage.setItem('roast_finance_data', JSON.stringify(this.data));
+    },
+
+    bindEvents() {
+        // CSV Dropzone in Import Modal
+        const dz = document.getElementById('finance-drop-zone');
+        const fi = document.getElementById('finance-csv-input');
+        if(!dz || !fi) return;
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(evt => {
+            dz.addEventListener(evt, (e) => { e.preventDefault(); e.stopPropagation(); }, false);
+        });
+        ['dragenter', 'dragover'].forEach(evt => dz.addEventListener(evt, () => dz.classList.add('dragover'), false));
+        ['dragleave', 'drop'].forEach(evt => dz.addEventListener(evt, () => dz.classList.remove('dragover'), false));
+        dz.addEventListener('drop', (e) => this.handleImportCSV(e.dataTransfer.files), false);
+        dz.addEventListener('click', () => { fi.click(); });
+        fi.addEventListener('change', (e) => { if (e.target.files) this.handleImportCSV(e.target.files); });
+    },
+
+    getMonthKey(dateObj) {
+        return `${dateObj.getFullYear()}-${String(dateObj.getMonth() + 1).padStart(2, '0')}`;
+    },
+
+    formatCurrency(num) {
+        return num.toLocaleString('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 });
+    },
+
+    openDashboard() {
+        app.switchView('finance');
+        this.render();
+    },
+
+    changeMonth(delta) {
+        this.currentDate.setMonth(this.currentDate.getMonth() + delta);
+        this.render();
+    },
+
+    // --- MODALS ---
+    closeModals() {
+        document.querySelectorAll('.modal').forEach(m => m.classList.add('hidden'));
+    },
+    
+    updateCategoryOptions() {
+        const type = document.getElementById('txn-type').value;
+        const catSelect = document.getElementById('txn-category');
+        catSelect.innerHTML = '';
+        const cats = type === 'expense' 
+            ? ['Food', 'Shopping', 'Transport', 'Entertainment', 'Subscriptions', 'Bills', 'Education', 'Health', 'Other']
+            : ['Salary', 'Freelance', 'Gift', 'Investment', 'Other'];
+        cats.forEach(c => {
+            const opt = document.createElement('option');
+            opt.value = c; opt.textContent = c;
+            catSelect.appendChild(opt);
+        });
+    },
+
+    openTxnModal(id = null) {
+        this.closeModals();
+        const modal = document.getElementById('finance-txn-modal');
+        const form = document.getElementById('txn-form');
+        document.getElementById('txn-id').value = id || '';
+        
+        if (id) {
+            const t = this.data.transactions.find(x => x.id === id);
+            if (t) {
+                document.getElementById('txn-type').value = t.type;
+                this.updateCategoryOptions();
+                document.getElementById('txn-category').value = t.category;
+                document.getElementById('txn-amount').value = t.amount;
+                document.getElementById('txn-date').value = t.date;
+                document.getElementById('txn-note').value = t.note || '';
+            }
+        } else {
+            form.reset();
+            document.getElementById('txn-type').value = 'expense';
+            this.updateCategoryOptions();
+            document.getElementById('txn-date').value = new Date().toISOString().split('T')[0];
+        }
+        modal.classList.remove('hidden');
+    },
+
+    openBudgetModal() {
+        this.closeModals();
+        document.getElementById('budget-form').reset();
+        document.getElementById('finance-budget-modal').classList.remove('hidden');
+    },
+
+    openSavingsModal(id = null) {
+        this.closeModals();
+        document.getElementById('savings-form').reset();
+        document.getElementById('savings-id').value = id || '';
+        if (id) {
+            const s = this.data.savings.find(x => x.id === id);
+            if(s) {
+                document.getElementById('savings-name').value = s.name;
+                document.getElementById('savings-target').value = s.target;
+                document.getElementById('savings-current').value = s.current;
+            }
+        }
+        document.getElementById('finance-savings-modal').classList.remove('hidden');
+    },
+
+    openImportModal() {
+        this.closeModals();
+        document.getElementById('finance-csv-input').value = "";
+        document.getElementById('finance-csv-msg').textContent = "";
+        document.getElementById('finance-import-modal').classList.remove('hidden');
+    },
+
+    // --- SAVE LOGIC ---
+    saveTxn() {
+        const id = document.getElementById('txn-id').value;
+        const t = {
+            id: id || 'txn_' + Date.now(),
+            type: document.getElementById('txn-type').value,
+            amount: parseFloat(document.getElementById('txn-amount').value),
+            category: document.getElementById('txn-category').value,
+            date: document.getElementById('txn-date').value,
+            note: document.getElementById('txn-note').value.trim()
+        };
+        if (id) {
+            const idx = this.data.transactions.findIndex(x => x.id === id);
+            if (idx > -1) this.data.transactions[idx] = t;
+        } else {
+            this.data.transactions.push(t);
+        }
+        this.saveData();
+        this.closeModals();
+        this.render();
+    },
+
+    deleteTxn(id) {
+        if(confirm("Delete this transaction?")) {
+            this.data.transactions = this.data.transactions.filter(x => x.id !== id);
+            this.saveData();
+            this.render();
+        }
+    },
+
+    saveBudget() {
+        const cat = document.getElementById('budget-category').value;
+        const limit = parseFloat(document.getElementById('budget-amount').value);
+        this.data.budgets[cat] = limit;
+        if (limit <= 0) delete this.data.budgets[cat]; // remove if 0
+        this.saveData();
+        this.closeModals();
+        this.render();
+    },
+
+    deleteBudget(cat) {
+        if(confirm("Remove budget for " + cat + "?")) {
+            delete this.data.budgets[cat];
+            this.saveData();
+            this.render();
+        }
+    },
+
+    saveSavingsGoal() {
+        const id = document.getElementById('savings-id').value;
+        const s = {
+            id: id || 'sav_' + Date.now(),
+            name: document.getElementById('savings-name').value,
+            target: parseFloat(document.getElementById('savings-target').value),
+            current: parseFloat(document.getElementById('savings-current').value)
+        };
+        if(id) {
+            const idx = this.data.savings.findIndex(x => x.id === id);
+            if (idx > -1) this.data.savings[idx] = s;
+        } else {
+            this.data.savings.push(s);
+        }
+        this.saveData();
+        this.closeModals();
+        this.render();
+    },
+
+    deleteSavingsGoal(id) {
+        if(confirm("Delete this savings goal?")) {
+            this.data.savings = this.data.savings.filter(x => x.id !== id);
+            this.saveData();
+            this.render();
+        }
+    },
+
+    // --- CSV BATCH IMPORT ---
+    handleImportCSV(files) {
+        if(!files || files.length === 0) return;
+        const msg = document.getElementById('finance-csv-msg');
+        msg.textContent = "Parsing CSV...";
+        
+        Papa.parse(files[0], {
+            header: false, skipEmptyLines: true,
+            complete: (results) => this.processImportData(results.data),
+            error: (err) => { msg.textContent = "Error: " + err.message; }
+        });
+    },
+
+    processImportData(rows) {
+        const msg = document.getElementById('finance-csv-msg');
+        let headerIdx = -1, maxScore = 0, columns = { date: -1, desc: -1, debit: -1, credit: -1 };
+        for (let i = 0; i < Math.min(rows.length, 30); i++) {
+            let score = 0, temp = { date:-1, desc:-1, debit:-1, credit:-1 };
+            rows[i].forEach((c, idx) => {
+                const s = String(c).toLowerCase();
+                if(temp.date === -1 && /(date|txn date|value date)/.test(s)) { score++; temp.date = idx; }
+                else if(temp.desc === -1 && /(description|narration|remarks)/.test(s)) { score++; temp.desc = idx; }
+                else if(temp.debit === -1 && /(debit|withdrawal|dr|out|amount)/.test(s)) { score++; temp.debit = idx; }
+                else if(temp.credit === -1 && /(credit|deposit|cr|in)/.test(s)) { score++; temp.credit = idx; }
+            });
+            if(score > maxScore) { maxScore = score; headerIdx = i; columns = temp; }
+        }
+
+        if(headerIdx === -1 || maxScore < 2) {
+            msg.textContent = "Could not map columns. Required: Date, Description, Amount."; return;
+        }
+
+        let imported = 0;
+        for (let i = headerIdx + 1; i < rows.length; i++) {
+            const row = rows[i];
+            if (!row[columns.date] && !row[columns.desc]) continue;
+            
+            const pAm = (val) => {
+                if(!val) return 0;
+                const v = parseFloat(String(val).replace(/[^0-9.-]+/g, ""));
+                return isNaN(v) ? 0 : Math.abs(v);
+            };
+
+            let deb = columns.debit !== -1 ? pAm(row[columns.debit]) : 0;
+            let cred = columns.credit !== -1 ? pAm(row[columns.credit]) : 0;
+            
+            if (columns.debit !== -1 && columns.credit === -1) {
+                const num = parseFloat(String(row[columns.debit]).replace(/[^\d.-]/g, ''));
+                if (num < 0) { deb = Math.abs(num); cred = 0; }
+                else if (num > 0) { cred = num; deb = 0; }
+            }
+
+            if(deb > 0 || cred > 0) {
+                // Determine cat naive
+                let cat = 'Other'; let type = deb > 0 ? 'expense' : 'income';
+                let desc = String(row[columns.desc] || "").trim();
+                let dL = desc.toLowerCase();
+                if(type === 'expense') {
+                    if(/(zomato|swiggy|uber eats|mcdonalds|starbucks|cafe|restaurant|food)/.test(dL)) cat = 'Food';
+                    else if(/(amazon|flipkart|myntra|zara|h&m)/.test(dL)) cat = 'Shopping';
+                    else if(/(uber|ola|rapido|metro|petrol|fuel)/.test(dL)) cat = 'Transport';
+                    else if(/(netflix|spotify|prime|hotstar|apple|google|subscription)/.test(dL)) cat = 'Subscriptions';
+                    else if(/(movie|pvr|bookmyshow)/.test(dL)) cat = 'Entertainment';
+                    else if(/(electricity|water|wifi|jio|airtel|bill)/.test(dL)) cat = 'Bills';
+                    else if(/(pharmacy|hospital|apollo|clinic)/.test(dL)) cat = 'Health';
+                } else {
+                    if(/(salary|payroll|wages)/.test(dL)) cat = 'Salary';
+                }
+
+                // Date parse (naive)
+                let dStr = row[columns.date] ? String(row[columns.date]) : new Date().toISOString().split('T')[0];
+                // basic cleanup just in case it's dd-mm-yyyy or something.
+                if(dStr.match(/^\d{2}[\/\-]\d{2}[\/\-]\d{4}/)) {
+                    let pts = dStr.split(/[\/\-]/);
+                    dStr = `${pts[2]}-${pts[1]}-${pts[0]}`;
+                }
+
+                this.data.transactions.push({
+                    id: 'imp_' + Date.now() + '_' + i,
+                    type: type,
+                    amount: deb > 0 ? deb : cred,
+                    category: cat,
+                    date: dStr,
+                    note: desc.substring(0, 30)
+                });
+                imported++;
+            }
+        }
+
+        if(imported > 0) {
+            this.saveData();
+            this.closeModals();
+            this.render();
+            alert(`Successfully imported ${imported} transactions!`);
+        } else {
+            msg.textContent = "No valid transactions found.";
+        }
+    },
+
+    // --- RENDER LOGIC ---
+    render() {
+        const monthNames = ["JANUARY", "FEBRUARY", "MARCH", "APRIL", "MAY", "JUNE", "JULY", "AUGUST", "SEPTEMBER", "OCTOBER", "NOVEMBER", "DECEMBER"];
+        const curM = this.currentDate.getMonth();
+        const curY = this.currentDate.getFullYear();
+        document.getElementById('finance-month-display').textContent = `${monthNames[curM]} ${curY}`;
+
+        // Empty state check
+        if (this.data.transactions.length === 0 && this.data.savings.length === 0 && Object.keys(this.data.budgets).length === 0) {
+            document.getElementById('finance-empty-state').classList.remove('hidden');
+            document.getElementById('finance-dashboard-content').classList.add('hidden');
+            return;
+        }
+
+        document.getElementById('finance-empty-state').classList.add('hidden');
+        document.getElementById('finance-dashboard-content').classList.remove('hidden');
+
+        // Filter current month txns
+        const mKey = this.getMonthKey(this.currentDate);
+        const monthTxns = this.data.transactions.filter(t => t.date.startsWith(mKey)).sort((a,b) => new Date(b.date) - new Date(a.date));
+
+        // KPIs
+        let tInc = 0, tExp = 0;
+        const catSpent = {};
+        monthTxns.forEach(t => {
+            if (t.type === 'income') tInc += t.amount;
+            else { 
+                tExp += t.amount; 
+                catSpent[t.category] = (catSpent[t.category] || 0) + t.amount;
+            }
+        });
+
+        document.getElementById('kpi-income').textContent = this.formatCurrency(tInc);
+        document.getElementById('kpi-spent').textContent = this.formatCurrency(tExp);
+        document.getElementById('kpi-remaining').textContent = this.formatCurrency(tInc - tExp);
+        
+        let sRate = tInc > 0 ? Math.max(0, Math.round(((tInc - tExp) / tInc) * 100)) : 0;
+        document.getElementById('kpi-rate').textContent = sRate + '%';
+
+        // Render List
+        const listC = document.getElementById('txn-list-container');
+        listC.innerHTML = monthTxns.length === 0 ? '<p class="text-muted">No transactions this month.</p>' : '';
+        
+        const getIcon = (cat) => {
+            const map = { 'Food': 'pizza', 'Shopping': 'shopping-bag', 'Transport': 'car', 'Entertainment': 'film', 'Subscriptions': 'monitor-play', 'Bills': 'receipt', 'Health': 'heart-pulse', 'Education': 'book-open', 'Salary': 'briefcase' };
+            return map[cat] || 'circle-dashed';
+        };
+
+        // Render top 10
+        monthTxns.slice(0, 10).forEach(t => {
+            listC.innerHTML += `
+                <div class="txn-item">
+                    <div class="txn-left">
+                        <div class="txn-icon"><i data-lucide="${getIcon(t.category)}" style="width:20px;height:20px;"></i></div>
+                        <div class="txn-details">
+                            <span class="txn-title">${t.category}</span>
+                            <span class="txn-date">${t.date} ${t.note ? '• ' + t.note : ''}</span>
+                        </div>
+                    </div>
+                    <div class="txn-right">
+                        <span class="txn-amount ${t.type}">${t.type === 'income' ? '+' : '-'}${this.formatCurrency(t.amount)}</span>
+                        <div class="txn-actions">
+                            <button onclick="app.finance.openTxnModal('${t.id}')"><i data-lucide="edit-2" style="width:16px;"></i></button>
+                            <button onclick="app.finance.deleteTxn('${t.id}')"><i data-lucide="trash-2" style="width:16px;"></i></button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        });
+
+        // Render Budgets
+        const budC = document.getElementById('budget-list-container');
+        budC.innerHTML = Object.keys(this.data.budgets).length === 0 ? '<p class="text-muted">No budgets set.</p>' : '';
+        let overBudgetCount = 0;
+        
+        for (const [cat, limit] of Object.entries(this.data.budgets)) {
+            const spent = catSpent[cat] || 0;
+            const pct = Math.min(100, Math.round((spent / limit) * 100));
+            const isOver = spent > limit;
+            if(isOver) overBudgetCount++;
+
+            let roastHtml = '';
+            if (isOver && window.ROAST_LIBRARY && window.ROAST_LIBRARY.budget) {
+                const bk = cat.toLowerCase();
+                const dict = window.ROAST_LIBRARY.budget[bk] || window.ROAST_LIBRARY.budget.general;
+                const rText = dict[Math.floor(Math.random()*dict.length)];
+                roastHtml = `<div class="budget-overrun tech-mono"><strong class="text-danger">> OVER BUDGET:</strong> ${rText}</div>`;
+            }
+
+            budC.innerHTML += `
+                <div class="budget-item">
+                    <div class="budget-header">
+                        <span class="budget-title"><i data-lucide="${getIcon(cat)}" style="width:16px;"></i> ${cat}</span>
+                        <span class="budget-stats ${isOver ? 'text-danger':''}">${this.formatCurrency(spent)} / ${this.formatCurrency(limit)}</span>
+                    </div>
+                    <div class="progress-bar-bg">
+                        <div class="progress-bar-fill" style="width: ${pct}%; background: ${isOver ? 'var(--accent-danger)' : 'var(--accent-acid)'};"></div>
+                    </div>
+                    ${roastHtml}
+                    <div style="text-align:right; margin-top:0.25rem;"><button class="tech-mono text-muted" style="background:none;border:none;cursor:pointer;font-size:0.7rem;" onclick="app.finance.deleteBudget('${cat}')">REMOVE</button></div>
+                </div>
+            `;
+        }
+
+        // Render Savings
+        const savC = document.getElementById('savings-list-container');
+        savC.innerHTML = this.data.savings.length === 0 ? '<p class="text-muted">No savings goals set.</p>' : '';
+        this.data.savings.forEach(s => {
+            const pct = Math.min(100, Math.round((s.current / s.target) * 100));
+            savC.innerHTML += `
+                <div class="savings-item">
+                    <div class="savings-header">
+                        <span class="savings-title">${s.name}</span>
+                        <span class="savings-stats">${this.formatCurrency(s.current)} / ${this.formatCurrency(s.target)}</span>
+                    </div>
+                    <div class="progress-bar-bg">
+                        <div class="progress-bar-fill" style="width: ${pct}%; background: #00ff66;"></div>
+                    </div>
+                    <div style="display:flex; justify-content:space-between; margin-top:0.25rem;">
+                        <span class="tech-mono" style="font-size:0.7rem; color:#00ff66;">${pct}% COMPLETED</span>
+                        <div>
+                            <button class="tech-mono text-muted" style="background:none;border:none;cursor:pointer;font-size:0.7rem;margin-right:10px;" onclick="app.finance.openSavingsModal('${s.id}')">EDIT</button>
+                            <button class="tech-mono text-muted" style="background:none;border:none;cursor:pointer;font-size:0.7rem;" onclick="app.finance.deleteSavingsGoal('${s.id}')">DELETE</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        });
+
+        // Render Insights & Chaos Score
+        const insC = document.getElementById('finance-insights-content');
+        if (monthTxns.length === 0) {
+            insC.innerHTML = "<p class="text-muted">Add transactions to generate insights.</p>";
+            document.getElementById('live-chaos-score').textContent = '0 / 100';
+        } else {
+            // Find biggest drain
+            let topCat = null, topAmt = 0;
+            for(const [c, a] of Object.entries(catSpent)) {
+                if(a > topAmt) { topAmt = a; topCat = c; }
+            }
+
+            let insHtml = '';
+            if (topCat) {
+                insHtml += `
+                    <p class="tech-mono text-muted mb-2">BIGGEST MONEY DRAIN</p>
+                    <p style="font-size:1.1rem; margin-bottom:1rem;"><strong class="highlight-acid">${topCat}</strong> — ${this.formatCurrency(topAmt)}</p>
+                `;
+            }
+            if (sRate < 10 && tExp > 0) {
+                insHtml += `<p class="tech-mono" style="color:var(--accent-danger);">>> CRITICAL: Saving rate is abysmal.</p>`;
+            } else if (sRate > 30) {
+                insHtml += `<p class="tech-mono" style="color:#00ff66;">>> RARE: Actually saving money. Good job.</p>`;
+            }
+            insC.innerHTML = insHtml;
+
+            // Live Chaos Score logic
+            let chaos = 20; // base
+            if (sRate < 10) chaos += 30;
+            else if (sRate < 20) chaos += 15;
+            chaos += (overBudgetCount * 15);
+            if (tExp > tInc) chaos += 30;
+            let ratio = tInc > 0 ? (tExp / tInc) : 1;
+            if (ratio > 0.8 && ratio <= 1) chaos += 10;
+            chaos = Math.min(100, Math.max(0, Math.round(chaos)));
+            
+            const liveC = document.getElementById('live-chaos-score');
+            liveC.textContent = `${chaos} / 100`;
+            liveC.style.color = chaos > 70 ? 'var(--accent-danger)' : (chaos > 40 ? 'var(--accent-acid)' : '#00ff66');
+        }
+
+        if(window.lucide) window.lucide.createIcons();
+    }
+};
+
+app.finance = financeManager;
+
+// ==========================================
 // APP LOGIC
 // ==========================================
 const app = {
@@ -141,6 +623,7 @@ const app = {
         this.bindEvents();
         this.initCursor();
         this.initObservers();
+        if(this.finance) this.finance.init();
         if(window.lucide) { window.lucide.createIcons(); }
     },
 
