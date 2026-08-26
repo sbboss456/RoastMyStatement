@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Roast My Statement</title>
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Outfit:wght@500;700;900&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    
+    <!-- Styles -->
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="loading-state">
+    
+    <!-- Custom Cursor -->
+    <div class="cursor-dot" id="cursor-dot"></div>
+    <div class="cursor-ring" id="cursor-ring"></div>
+
+    <!-- Background Effects -->
+    <div class="ambient-glow spot-1"></div>
+    <div class="ambient-glow spot-2"></div>
+    <div class="noise-overlay"></div>
+
+    <!-- Ticker / Marquee -->
+    <div class="ticker-wrap" id="main-ticker">
+        <div class="ticker-content">
+            <span class="ticker-item">WARNING: FINANCIAL DISASTER DETECTED</span>
+            <span class="ticker-separator">✱</span>
+            <span class="ticker-item">ROAST MODULE INITIALIZED</span>
+            <span class="ticker-separator">✱</span>
+            <span class="ticker-item">PREPARE YOUR EGO</span>
+            <span class="ticker-separator">✱</span>
+            <span class="ticker-item">100% LOCAL PROCESSING</span>
+            <span class="ticker-separator">✱</span>
+            <span class="ticker-item">WARNING: FINANCIAL DISASTER DETECTED</span>
+            <span class="ticker-separator">✱</span>
+            <span class="ticker-item">ROAST MODULE INITIALIZED</span>
+            <span class="ticker-separator">✱</span>
+            <span class="ticker-item">PREPARE YOUR EGO</span>
+            <span class="ticker-separator">✱</span>
+            <span class="ticker-item">100% LOCAL PROCESSING</span>
+            <span class="ticker-separator">✱</span>
+        </div>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="navbar reveal">
+        <div class="logo">
+            <span class="logo-icon spin-slow">✱</span>
+            ROAST MY STATEMENT
+        </div>
+        <div class="nav-links">
+            <a href="#" class="hover-underline" onclick="app.resetQuiz()">Restart</a>
+            <a href="#privacy" class="hover-underline">Privacy</a>
+        </div>
+    </nav>
+
+    <!-- Main Content Application Flow -->
+    <main id="app-container">
+        
+        <!-- ==========================================
+             VIEW: HOME (LANDING)
+             ========================================== -->
+        <section id="view-home" class="view active hero reveal">
+            <div class="sys-badge flicker-text">
+                <span class="indicator-light"></span> SYSTEM READY // V. 1.1
+            </div>
+            <h1 class="hero-title">
+                WHAT KIND OF <br>
+                <span class="highlight-acid skew-text">SPENDER ARE YOU?</span>
+            </h1>
+            <p class="hero-subtitle">Answer a few questions. Discover your financial personality. Get roasted abruptly and brutally. (100% Local)</p>
+            
+            <div class="cta-group">
+                <button class="action-button primary-cta pulse-glow" id="btn-start-quiz">
+                    <span>DISCOVER MY PERSONALITY</span>
+                </button>
+                <div class="secondary-cta-wrapper mt-4">
+                    <span class="tech-label display-block mb-2">OR</span>
+                    <button class="action-button subtle" id="btn-show-csv">
+                        <span>I HAVE A BANK STATEMENT →</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Legacy Uploader Section (Hidden inside Home view) -->
+            <div id="legacy-uploader" class="hidden mt-4">
+                <div class="tech-folder-tab"><span>INPUT.CSV</span></div>
+                <div class="uploader-card" id="drop-zone">
+                    <div class="corner-bracket top-left"></div>
+                    <div class="corner-bracket top-right"></div>
+                    <div class="corner-bracket bottom-left"></div>
+                    <div class="corner-bracket bottom-right"></div>
+                    
+                    <div class="uploader-content">
+                        <h2 class="upload-title">CSV ENGINE OFFLINE</h2>
+                        <p class="upload-subtitle">Module in development. Take the quiz instead.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+
+        <!-- ==========================================
+             VIEW: QUIZ CONTAINER
+             ========================================== -->
+        <section id="view-quiz" class="view hidden">
+            <div class="quiz-progress-container">
+                <div class="quiz-header">
+                    <span class="tech-label highlight-acid blink">SCANNING BEHAVIOR</span>
+                    <span class="tech-mono" id="progress-text">01 / 08</span>
+                </div>
+                <div class="progress-track">
+                    <div class="progress-bar" id="progress-bar" style="width: 12.5%;"></div>
+                </div>
+            </div>
+
+            <div class="question-container" id="question-container">
+                <!-- Question injected via JS -->
+            </div>
+        </section>
+
+
+        <!-- ==========================================
+             VIEW: ANALYZING (TRANSITION)
+             ========================================== -->
+        <section id="view-analyzing" class="view hidden terminal-view">
+            <div class="terminal-box">
+                <div id="terminal-output">
+                    <!-- Lines injected via JS -->
+                </div>
+                <div class="terminal-cursor">█</div>
+            </div>
+        </section>
+
+
+        <!-- ==========================================
+             VIEW: RESULT
+             ========================================== -->
+        <section id="view-result" class="view hidden">
+            
+            <div class="result-header fade-in">
+                <span class="tech-label highlight-acid">DIAGNOSIS COMPLETE</span>
+                <h2>YOUR FINANCIAL PERSONALITY</h2>
+                <h1 id="result-title" class="huge-title">THE FINANCIAL MENACE</h1>
+                <p id="result-desc" class="result-subtitle">You don't spend money. You release it into the wild.</p>
+            </div>
+
+            <div class="result-layout fade-in-delayed">
+                
+                <!-- Left Col: The Share Card -->
+                <div class="share-card-wrapper">
+                    <!-- 9:16 Aspect Ratio Card -->
+                    <div class="share-card" id="share-card-element">
+                        <div class="card-glass-layer"></div>
+                        
+                        <div class="card-brand">
+                            <span class="logo-icon">✱</span> ROAST MY STATEMENT
+                        </div>
+                        
+                        <div class="card-emoji" id="card-emoji">💀</div>
+                        
+                        <div class="card-identity">
+                            <h2 id="card-title">THE FINANCIAL MENACE</h2>
+                            <p id="card-desc">You don't spend money. You release it into the wild.</p>
+                        </div>
+                        
+                        <div class="card-scores" id="card-scores">
+                            <!-- Injected via JS -->
+                        </div>
+                        
+                        <div class="card-roast">
+                            <span class="tech-mono acid-text">>> FATAL ERROR:</span>
+                            <p id="card-roast-text">"Your wallet doesn't have a spending problem. It has a survival problem."</p>
+                        </div>
+                        
+                        <div class="card-footer">
+                            <span>roastmystatement.com</span>
+                            <span class="tech-mono barcode">|||| ||| | || |||</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Col: Actions & Deep Dive -->
+                <div class="result-actions-panel">
+                    
+                    <div class="roast-box">
+                        <div class="roast-header">
+                            <span class="status-dot warning"></span>
+                            <span class="tech-label">ROAST_SYSTEM_OUTPUT</span>
+                        </div>
+                        <p id="roast-text-full">...</p>
+                    </div>
+
+                    <div class="score-breakdown" id="score-breakdown">
+                        <!-- Full breakdown injected here -->
+                    </div>
+
+                    <div class="action-buttons-stack">
+                        <button class="action-button primary-cta pulse-glow" id="btn-share">
+                            <span>SHARE MY PERSONALITY</span>
+                        </button>
+                        <button class="action-button subtle" id="btn-restart">
+                            <span>TRY AGAIN / REDEEM YOURSELF</span>
+                        </button>
+                    </div>
+
+                    <div class="viral-loop-box mt-4">
+                        <span class="tech-mono text-muted mb-2 display-block">Think your friend is worse?</span>
+                        <button class="action-button outline" onclick="alert('Copy link to clipboard implemented here!')">
+                            <span>COPY LINK TO ROAST THEM →</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="reveal">
+        <div class="footer-content">
+            <span class="tech-mono">© 2024 ROAST MY STATEMENT // <span class="blink">LOCAL_MODE_ACTIVE</span></span>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="js/app.js"></script>
+</body>
+</html>
