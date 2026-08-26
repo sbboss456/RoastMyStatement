@@ -147,13 +147,23 @@ const app = {
             home: document.getElementById('view-home'),
             quiz: document.getElementById('view-quiz'),
             analyzing: document.getElementById('view-analyzing'),
-            result: document.getElementById('view-result')
+            result: document.getElementById('view-result'),
+            csvResult: document.getElementById('view-csv-result')
         };
         this.qContainer = document.getElementById('question-container');
         this.progressBar = document.getElementById('progress-bar');
         this.progressText = document.getElementById('progress-text');
         this.modal = document.getElementById('challenge-modal');
         this.inputFriendName = document.getElementById('friend-name');
+        
+        // CSV Elements
+        this.csvDropZone = document.getElementById('drop-zone');
+        this.csvInput = document.getElementById('file-input');
+        this.csvUploaderUI = document.getElementById('uploader-ui');
+        this.csvSuccessUI = document.getElementById('uploader-success-ui');
+        this.csvFileName = document.getElementById('selected-file-name');
+        this.csvErrorMsg = document.getElementById('csv-error-msg');
+        this.csvSysMsg = document.getElementById('csv-sys-msg');
     },
 
     bindEvents() {
@@ -175,6 +185,17 @@ const app = {
         this.inputFriendName.addEventListener('input', () => this.updateChallengePreview());
         document.getElementById('btn-share-challenge').addEventListener('click', () => this.shareChallenge(true));
         document.getElementById('btn-copy-challenge').addEventListener('click', () => this.shareChallenge(false));
+
+        // CSV Uploader Events
+        const dz = this.csvDropZone;
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(evt => {
+            window.addEventListener(evt, (e) => { e.preventDefault(); e.stopPropagation(); }, false);
+        });
+        ['dragenter', 'dragover'].forEach(evt => dz.addEventListener(evt, () => dz.classList.add('dragover'), false));
+        ['dragleave', 'drop'].forEach(evt => dz.addEventListener(evt, () => dz.classList.remove('dragover'), false));
+        dz.addEventListener('drop', (e) => this.handleCSVFiles(e.dataTransfer.files), false);
+        dz.addEventListener('click', () => { if (this.csvSuccessUI.classList.contains('hidden')) this.csvInput.click(); });
+        this.csvInput.addEventListener('change', (e) => { if (e.target.files) this.handleCSVFiles(e.target.files); });
     },
 
     // --- SETUP VIRAL LOOP LANDING ---
@@ -372,10 +393,152 @@ const app = {
         document.getElementById('hero-title-text').innerHTML = `WHAT KIND OF <br><span class="highlight-acid skew-text">SPENDER ARE YOU?</span>`;
         document.getElementById('hero-subtitle-text').textContent = "Answer a few questions. Discover your financial personality. Get roasted abruptly and brutally. (100% Local)";
         document.getElementById('btn-start-span').textContent = "DISCOVER MY PERSONALITY";
+        document.getElementById('legacy-uploader').classList.add('hidden');
         document.getElementById('challenge-accepted-msg').classList.add('hidden');
         document.getElementById('normal-diagnosis-msg').classList.remove('hidden');
         document.getElementById('main-ticker').classList.remove('alert-mode');
+        
+        // Reset CSV UI
+        this.csvErrorMsg.textContent = "";
+        this.csvUploaderUI.classList.remove('hidden');
+        this.csvSuccessUI.classList.add('hidden');
+        this.csvInput.value = "";
+        
         this.switchView('home');
+    },
+
+    // --- CSV ENGINE ---
+    handleCSVFiles(files) {
+        if (!files || files.length === 0) return;
+        const file = files[0];
+        
+        this.csvErrorMsg.textContent = "";
+
+        if (file.type !== 'text/csv' && !file.name.toLowerCase().endsWith('.csv')) {
+            this.csvErrorMsg.textContent = "Error: Please upload a valid .csv file.";
+            return;
+        }
+
+        // Show Success UI
+        this.csvFileName.textContent = file.name;
+        this.csvUploaderUI.classList.add('hidden');
+        this.csvSuccessUI.classList.remove('hidden');
+        this.csvDropZone.style.cursor = 'default';
+        if (this.applyCursorHover) document.getElementById('cursor-ring').classList.remove('active');
+
+        // Typewriter effect
+        const msg = this.csvSysMsg;
+        const oText = "> Statement accepted. Initializing PapaParse engine...";
+        msg.textContent = '';
+        let i = 0;
+        const tw = setInterval(() => {
+            if (i < oText.length) { msg.textContent += oText.charAt(i); i++; }
+            else { clearInterval(tw); this.parseCSVFile(file); }
+        }, 20);
+    },
+
+    parseCSVFile(file) {
+        if (typeof Papa === 'undefined') {
+            this.csvSysMsg.textContent = "> ERROR: Parser library missing.";
+            return;
+        }
+        
+        this.csvSysMsg.textContent = "> Extracting transaction rows...";
+        
+        Papa.parse(file, {
+            header: false,
+            skipEmptyLines: true,
+            complete: (results) => {
+                this.processCSVData(results.data);
+            },
+            error: (err) => {
+                this.csvSysMsg.textContent = "> ERROR: " + err.message;
+            }
+        });
+    },
+
+    processCSVData(rows) {
+        if (!rows || rows.length === 0) {
+            this.csvSysMsg.textContent = "> ERROR: File is empty.";
+            return;
+        }
+
+        // 1. Find the header row by searching for common bank keywords
+        let headerIdx = -1;
+        let maxScore = 0;
+        let columns = { date: -1, desc: -1, debit: -1, credit: -1 };
+
+        // Search first 30 rows
+        for (let i = 0; i < Math.min(rows.length, 30); i++) {
+            const row = rows[i];
+            let score = 0;
+            let tempCols = { date: -1, desc: -1, debit: -1, credit: -1 };
+            
+            row.forEach((cell, colIdx) => {
+                if (!cell) return;
+                const c = String(cell).toLowerCase();
+                
+                if (tempCols.date === -1 && /(date|txn date|value date)/.test(c)) { score++; tempCols.date = colIdx; }
+                else if (tempCols.desc === -1 && /(description|narration|particulars|remarks|details)/.test(c)) { score++; tempCols.desc = colIdx; }
+                else if (tempCols.debit === -1 && /(debit|withdrawal|dr|out|amount)/.test(c)) { score++; tempCols.debit = colIdx; }
+                else if (tempCols.credit === -1 && /(credit|deposit|cr|in)/.test(c)) { score++; tempCols.credit = colIdx; }
+            });
+
+            if (score > maxScore) {
+                maxScore = score;
+                headerIdx = i;
+                columns = tempCols;
+            }
+        }
+
+        if (headerIdx === -1 || maxScore < 2) {
+            this.csvSysMsg.textContent = "> ERROR: Cannot identify bank statement columns. Ensure Date, Description, and Debit/Credit exist.";
+            return;
+        }
+
+        this.csvSysMsg.textContent = "> Analyzing financial footprint...";
+
+        // 2. Parse exactly what we need
+        let totalDebits = 0;
+        let totalCredits = 0;
+        let validTxns = 0;
+
+        for (let i = headerIdx + 1; i < rows.length; i++) {
+            const row = rows[i];
+            // Basic validation
+            if (!row[columns.date] && !row[columns.desc]) continue;
+
+            const parseAmount = (val) => {
+                if (!val) return 0;
+                const clean = String(val).replace(/[^0-9.-]+/g, "");
+                const num = parseFloat(clean);
+                return isNaN(num) ? 0 : Math.abs(num);
+            };
+
+            let debit = columns.debit !== -1 ? parseAmount(row[columns.debit]) : 0;
+            let credit = columns.credit !== -1 ? parseAmount(row[columns.credit]) : 0;
+            
+            // If amount column handles both (like 'Amount' + negative for debit)
+            if (columns.debit !== -1 && columns.credit === -1) {
+                const raw = String(row[columns.debit]).replace(/[^\d.-]/g, '');
+                const num = parseFloat(raw);
+                if (num < 0) { debit = Math.abs(num); credit = 0; }
+                else if (num > 0) { credit = num; debit = 0; }
+            }
+
+            if (debit > 0 || credit > 0) validTxns++;
+            totalDebits += debit;
+            totalCredits += credit;
+        }
+
+        // 3. Update Result UI
+        document.getElementById('csv-stat-txns').textContent = validTxns;
+        document.getElementById('csv-stat-debits').textContent = totalDebits.toLocaleString('en-IN', { style: 'currency', currency: 'INR' });
+        document.getElementById('csv-stat-credits').textContent = totalCredits.toLocaleString('en-IN', { style: 'currency', currency: 'INR' });
+
+        setTimeout(() => {
+            this.switchView('csvResult');
+        }, 1200);
     },
 
     // --- VIRAL CHALLENGE MODAL ---

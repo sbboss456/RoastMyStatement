@@ -86,17 +86,33 @@
                 </div>
             </div>
 
-            <!-- Legacy Uploader Section -->
+            <!-- CSV Uploader Section -->
             <div id="legacy-uploader" class="hidden mt-4">
                 <div class="tech-folder-tab"><span>INPUT.CSV</span></div>
                 <div class="uploader-card" id="drop-zone">
+                    <input type="file" id="file-input" accept=".csv" hidden>
                     <div class="corner-bracket top-left"></div>
                     <div class="corner-bracket top-right"></div>
                     <div class="corner-bracket bottom-left"></div>
                     <div class="corner-bracket bottom-right"></div>
-                    <div class="uploader-content">
-                        <h2 class="upload-title">CSV ENGINE OFFLINE</h2>
-                        <p class="upload-subtitle">Module in development. Take the quiz instead.</p>
+                    
+                    <div class="uploader-content" id="uploader-ui">
+                        <div class="upload-icon-wrapper">
+                            <svg class="float-anim" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                <polyline points="17 8 12 3 7 8"></polyline>
+                                <line x1="12" y1="3" x2="12" y2="15"></line>
+                            </svg>
+                        </div>
+                        <h2 class="upload-title">DROP BANK STATEMENT</h2>
+                        <p class="upload-subtitle">Only .csv files. 100% Client-Side Processing.</p>
+                        <p class="tech-mono text-muted mt-2" id="csv-error-msg" style="color: var(--accent-danger);"></p>
+                    </div>
+
+                    <div class="uploader-success hidden" id="uploader-success-ui">
+                        <div class="file-badge">CSV</div>
+                        <h2 class="file-name mt-2" id="selected-file-name">statement.csv</h2>
+                        <p class="system-msg type-anim mt-2" id="csv-sys-msg">> Processing financial logs...</p>
                     </div>
                 </div>
             </div>
@@ -215,6 +231,44 @@
             
         </section>
 
+        <!-- ==========================================
+             VIEW: CSV RESULT
+             ========================================== -->
+        <section id="view-csv-result" class="view hidden">
+            <div class="result-header fade-in">
+                <span class="tech-label highlight-acid">STATEMENT ANALYSIS COMPLETE</span>
+                <h2>YOUR FINANCIAL FOOTPRINT</h2>
+            </div>
+            
+            <div class="result-layout fade-in-delayed" style="max-width: 800px; margin: 0 auto; grid-template-columns: 1fr;">
+                 <div class="roast-box">
+                    <div class="roast-header">
+                        <span class="status-dot warning"></span>
+                        <span class="tech-label">RAW_DATA_SUMMARY</span>
+                    </div>
+                    <div class="score-line mb-2">
+                        <span class="score-name" style="font-size: 1rem;">Total Transactions</span>
+                        <strong class="highlight-acid" id="csv-stat-txns">0</strong>
+                    </div>
+                    <div class="score-line mb-2">
+                        <span class="score-name" style="font-size: 1rem;">Total Debits (Spent)</span>
+                        <strong style="color: var(--accent-danger);" id="csv-stat-debits">0.00</strong>
+                    </div>
+                    <div class="score-line mb-4">
+                        <span class="score-name" style="font-size: 1rem;">Total Credits (Received)</span>
+                        <strong style="color: #00ff66;" id="csv-stat-credits">0.00</strong>
+                    </div>
+                    <p class="text-muted" style="font-style: italic; font-size: 0.9rem;">
+                        Note: The Deep Roast Engine for CSVs is currently being calibrated in the background. Full transaction-level roasting coming in the next update.
+                    </p>
+                    
+                    <button class="action-button primary-cta w-full mt-4" onclick="app.resetQuiz()">
+                        <span>RETURN TO MENU</span>
+                    </button>
+                 </div>
+            </div>
+        </section>
+
     </main>
 
     <!-- ==========================================
@@ -268,6 +322,7 @@
     </footer>
 
     <!-- Scripts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
     <script src="js/roasts.js"></script>
     <script src="js/app.js"></script>
 </body>
