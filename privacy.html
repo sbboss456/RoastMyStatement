@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Privacy Policy - Roast My Statement</title>
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Outfit:wght@500;700;900&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        .privacy-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 4rem 1.5rem;
+        }
+        h2 { margin-top: 2rem; margin-bottom: 1rem; color: var(--accent-acid); font-family: var(--font-display); }
+        h3 { margin-top: 1.5rem; margin-bottom: 0.5rem; }
+        p, ul { color: var(--text-muted); margin-bottom: 1rem; }
+        ul { padding-left: 1.5rem; }
+        li { margin-bottom: 0.5rem; }
+        a { color: var(--accent-acid); text-decoration: none; }
+        a:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+    <nav class="navbar reveal active">
+        <div class="logo">
+            <span class="logo-icon spin-slow">*</span>
+            ROAST MY STATEMENT
+        </div>
+        <div class="nav-links">
+            <a href="index.html" class="hover-underline">Back to Home</a>
+        </div>
+    </nav>
+
+    <main class="privacy-container reveal active">
+        <span class="tech-label highlight-acid">> LEGAL COMPLIANCE</span>
+        <h1 class="huge-title mt-2 mb-4" style="font-size: 3rem;">PRIVACY POLICY</h1>
+        <p><strong>Last Updated: August 26, 2026</strong></p>
+
+        <div class="glossy-panel p-4 mt-4">
+            <h2>1. The Short Version: We Collect Nothing</h2>
+            <p><strong>Roast My Statement</strong> is designed as a 100% offline, local-first application. We do not have servers, we do not require accounts, and <strong>we do not collect, harvest, transmit, or sell your personal or financial data.</strong></p>
+
+            <h2>2. Data Processing and Storage</h2>
+            <p>All data processed by the application remains strictly on your personal device. This includes:</p>
+            <ul>
+                <li><strong>Financial Quiz Answers:</strong> Stored locally in your device's memory to generate your personality profile.</li>
+                <li><strong>Bank Statements (.csv files):</strong> When you import a CSV statement, the parsing algorithm runs entirely inside your device's browser/app engine. The file is never uploaded to the internet.</li>
+                <li><strong>Personal Logs & Budgets:</strong> Data entered into the Financial Management dashboard is saved to your browser/device's local storage (e.g., <code>localStorage</code> or <code>IndexedDB</code>).</li>
+                <li><strong>Profile Pictures:</strong> Images you upload as an avatar are processed through a local cropper and saved as localized strings on your device.</li>
+            </ul>
+
+            <h2>3. Permissions (Android App)</h2>
+            <p>If you are using the Android application version of Roast My Statement, the app may request the following permissions purely to perform localized functions:</p>
+            <ul>
+                <li><strong>Storage/Media Access:</strong> Requested <em>only</em> if you attempt to save your generated 9:16 PNG Personality Card directly to your device's Gallery. We do not scan, read, or upload other files from your file system.</li>
+            </ul>
+
+            <h2>4. Third-Party Services & Tracking</h2>
+            <p>We do not embed third-party advertising trackers (like Google Analytics, Facebook Pixel, or AdMob) within the core application. Your usage behavior within the app is private to you.</p>
+
+            <h2>5. Data Deletion</h2>
+            <p>Because your data is stored locally, you have complete control over its destruction. You can delete all your data at any time by navigating to <strong>Settings -> Danger Zone</strong> within the application and selecting <strong>Factory Reset System</strong>. Uninstalling the app, or clearing your browser cache (if using the web version), will also permanently destroy the data.</p>
+
+            <h2>6. Changes to This Policy</h2>
+            <p>If we ever introduce optional online features (like cloud backups), we will update this policy and explicitly ask for your permission before any data leaves your device.</p>
+        </div>
+    </main>
+
+    <footer>
+        <div class="footer-content">
+            <span class="tech-mono">© 2024 ROAST MY STATEMENT // <span class="blink">LOCAL_MODE_ACTIVE</span></span>
+        </div>
+    </footer>
+</body>
+</html>
