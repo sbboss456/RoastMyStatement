@@ -776,13 +776,9 @@ const settingsManager = {
 // ANDROID NATIVE INTEGRATION
 // ==========================================
 window.handleAndroidBack = function() {
-    // 1. Check for open modals
     const modals = Array.from(document.querySelectorAll('.modal:not(.hidden)'));
     if (modals.length > 0) {
-        // Find topmost and close it
         const topModal = modals[modals.length - 1];
-        
-        // Handle specifically Cropper modal which has instance binding
         if (topModal.id === 'cropper-modal' && app.settings) {
             app.settings.closeCropper();
         } else if (app.finance && topModal.id.startsWith('finance')) {
@@ -790,25 +786,91 @@ window.handleAndroidBack = function() {
         } else {
             topModal.classList.add('hidden');
         }
-        return true; // handled
+        return true;
     }
 
-    // 2. Check view routing (Go back to Home if deeply navigated)
     const activeView = document.querySelector('.view.active');
     if (activeView && activeView.id !== 'view-home') {
-        // If mid-quiz, maybe cancel quiz?
         if (activeView.id === 'view-quiz') {
-            if(confirm("Cancel quiz and go back to menu?")) {
-                app.resetQuiz();
+            if (appState.currentQuestion > 0) {
+                appState.currentQuestion--;
+                app.renderQuestion();
+                return true;
+            } else {
+                if(confirm("Cancel quiz and go back to menu?")) app.resetQuiz();
             }
+        } else if(activeView.id === 'view-analyzing') {
+            return true; // Block backing out during loading terminal
         } else {
             app.switchView('home');
         }
-        return true; // handled
+        return true;
     }
-
-    return false; // Not handled, let Android back out of app
+    return false;
 };
+
+// Execute Android specific injections safely if running natively
+if (window.Capacitor && window.Capacitor.getPlatform() === 'android') {
+    document.addEventListener('DOMContentLoaded', () => {
+        document.body.classList.add('android-native-app');
+        
+        // Inject Bottom Navigation
+        const bottomNav = document.createElement('div');
+        bottomNav.className = 'android-bottom-nav';
+        bottomNav.innerHTML = `
+            <button class="nav-tab active" data-target="home" onclick="app.switchView('home')">
+                <i data-lucide="user"></i><span>Personality</span>
+            </button>
+            <button class="nav-tab" data-target="statement" onclick="app.finance.openImportModal();">
+                <i data-lucide="file-text"></i><span>Statement</span>
+            </button>
+            <button class="nav-tab" data-target="finance" onclick="app.finance.openDashboard()">
+                <i data-lucide="wallet"></i><span>Money</span>
+            </button>
+            <button class="nav-tab" data-target="settings" onclick="app.settings.openSettings()">
+                <i data-lucide="settings"></i><span>Settings</span>
+            </button>
+        `;
+        document.body.appendChild(bottomNav);
+
+        // Map View Switches to update the bottom nav active state
+        const originalSwitchView = app.switchView;
+        app.switchView = function(viewName) {
+            originalSwitchView.call(app, viewName);
+            document.querySelectorAll('.android-bottom-nav .nav-tab').forEach(btn => btn.classList.remove('active'));
+            let targetTab = 'home';
+            if (viewName === 'finance') targetTab = 'finance';
+            if (viewName === 'settings') targetTab = 'settings';
+            const tgt = document.querySelector(`.android-bottom-nav .nav-tab[data-target="${targetTab}"]`);
+            if (tgt) tgt.classList.add('active');
+        };
+
+        // Inject Native "SAVE IMAGE" Button directly alongside Share Button on Results Screen
+        const actionStack = document.querySelector('.action-buttons-stack');
+        if (actionStack) {
+            const saveBtn = document.createElement('button');
+            saveBtn.className = 'action-button subtle outline mt-2 w-full';
+            saveBtn.innerHTML = '<span>SAVE IMAGE</span>';
+            saveBtn.onclick = () => {
+                if (appState.shareImageBlob && window.AndroidNativeBridge) {
+                    const reader = new FileReader();
+                    reader.onloadend = () => {
+                        window.AndroidNativeBridge.saveImageToGallery(reader.result);
+                        const span = saveBtn.querySelector('span');
+                        span.textContent = 'IMAGE SAVED ✓';
+                        setTimeout(() => span.textContent = 'SAVE IMAGE', 2000);
+                    };
+                    reader.readAsDataURL(appState.shareImageBlob);
+                } else {
+                    app.shareResult(); // Fallback to normal flow if bridge fails
+                }
+            };
+            actionStack.insertBefore(saveBtn, document.getElementById('btn-restart'));
+        }
+        
+        if (window.lucide) window.lucide.createIcons();
+    });
+}
 
 const app = {
     views: {},
