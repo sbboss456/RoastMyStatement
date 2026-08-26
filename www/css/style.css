@@ -388,3 +388,80 @@ footer { text-align: center; padding: 2rem; margin-top: auto; border-top: 1px so
     #card-title { font-size: 1.3rem; }
     #card-desc { font-size: 0.75rem; }
 }
+
+/* ==========================================================================
+   ANDROID NATIVE CARD BUGFIXES (Fixes missing roasts & squished avatars)
+   ========================================================================== */
+body.android-native-app .share-card {
+    height: auto !important; /* Allow the wrapper to breathe so the roast never gets clipped */
+}
+body.android-native-app .ticket-main {
+    padding: 1.25rem 1.5rem !important;
+    justify-content: space-between;
+}
+body.android-native-app .card-brand {
+    margin-bottom: 0.5rem !important;
+}
+body.android-native-app .card-identity-block {
+    flex-direction: row !important;
+    align-items: center !important;
+    gap: 1rem !important;
+    margin-top: 0 !important;
+    margin-bottom: 0.5rem !important;
+}
+body.android-native-app .card-avatar-box {
+    margin-bottom: 0 !important;
+    width: 72px !important;
+    height: 72px !important;
+    min-width: 72px !important;
+    min-height: 72px !important;
+    flex-shrink: 0 !important;
+    display: flex !important;
+    justify-content: center;
+    align-items: center;
+}
+body.android-native-app .card-avatar-image {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover !important;
+    object-position: center !important;
+    border-radius: 8px !important;
+    display: block !important;
+}
+body.android-native-app .card-identity-text p.mb-4 {
+    margin-bottom: 0.25rem !important;
+    font-size: 0.75rem !important;
+    line-height: 1.2 !important;
+    max-width: 100% !important;
+}
+body.android-native-app #card-title {
+    font-size: 1.2rem !important;
+    margin-bottom: 0.25rem !important;
+    white-space: wrap;
+    word-break: break-word;
+}
+body.android-native-app .card-score-banner {
+    margin-bottom: 0.25rem !important;
+    font-size: 0.65rem !important;
+}
+body.android-native-app .card-scores {
+    gap: 0.4rem !important;
+    margin-bottom: 0.5rem !important;
+}
+body.android-native-app .score-line {
+    font-size: 0.7rem !important;
+}
+body.android-native-app .card-roast {
+    margin-bottom: 0 !important;
+    padding: 0.75rem !important;
+}
+body.android-native-app #card-roast-text {
+    font-size: 0.78rem !important;
+    line-height: 1.35 !important;
+}
+body.android-native-app .ticket-stub {
+    padding: 1rem 1.5rem !important;
+}
+body.android-native-app .stub-barcode {
+    height: 2rem !important;
+}
