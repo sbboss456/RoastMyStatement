@@ -93,27 +93,27 @@ const QUESTIONS = [
 
 const PERSONALITIES = [
     {
-        id: "boss", name: "THE FINANCIAL BOSS", emoji: "👑", desc: "You have terrifyingly good control over your money.",
+        id: "boss", name: "THE FINANCIAL BOSS", icon: "award", desc: "You have terrifyingly good control over your money.",
         condition: (scores) => scores.saving > 40 && scores.chaos < 30
     },
     {
-        id: "foodie", name: "THE FOODIE MENACE", emoji: "🍔", desc: "80% of your income is converted directly into calories.",
+        id: "foodie", name: "THE FOODIE MENACE", icon: "pizza", desc: "80% of your income is converted directly into calories.",
         condition: (scores) => scores.food > 30
     },
     {
-        id: "goblin", name: "THE DIGITAL GOBLIN", emoji: "🎮", desc: "You buy pixels instead of physical possessions.",
+        id: "goblin", name: "THE DIGITAL GOBLIN", icon: "gamepad-2", desc: "You buy pixels instead of physical possessions.",
         condition: (scores) => scores.digital > 25
     },
     {
-        id: "impulse", name: "THE IMPULSE BUYER", emoji: "🛍️", desc: "You see it. You like it. You buy it. You regret it.",
+        id: "impulse", name: "THE IMPULSE BUYER", icon: "shopping-bag", desc: "You see it. You like it. You buy it. You regret it.",
         condition: (scores) => scores.impulse > 40
     },
     {
-        id: "menace", name: "THE FINANCIAL MENACE", emoji: "💀", desc: "You don't spend money. You release it into the wild.",
+        id: "menace", name: "THE FINANCIAL MENACE", icon: "flame", desc: "You don't spend money. You release it into the wild.",
         condition: (scores) => scores.chaos > 45 || (scores.chaos > 30 && scores.impulse > 30)
     },
     {
-        id: "default", name: "THE AVERAGE SURVIVOR", emoji: "😐", desc: "You are financially floating. Neither rich nor broke.",
+        id: "default", name: "THE AVERAGE SURVIVOR", icon: "circle-dashed", desc: "You are financially floating. Neither rich nor broke.",
         condition: () => true
     }
 ];
@@ -125,7 +125,8 @@ const appState = {
     currentQuestion: 0,
     isChallenged: false,
     challengerName: null,
-    scores: { saving: 0, chaos: 0, impulse: 0, food: 0, digital: 0 }
+    scores: { saving: 0, chaos: 0, impulse: 0, food: 0, digital: 0 },
+    shareImageBlob: null
 };
 
 // ==========================================
@@ -140,6 +141,7 @@ const app = {
         this.bindEvents();
         this.initCursor();
         this.initObservers();
+        if(window.lucide) { window.lucide.createIcons(); }
     },
 
     cacheDOM() {
@@ -346,11 +348,21 @@ const app = {
             document.getElementById('normal-diagnosis-msg').classList.add('hidden');
         }
 
+        // Calculate a main aggregated Financial Score (e.g., Chaos + Impulse - Saving)
+        // Scaled to 0-100 logically
+        let mainScore = Math.round((scores.chaos * 1.2 + scores.impulse * 0.8 + (100 - scores.saving)) / 3);
+        mainScore = Math.min(100, Math.max(0, mainScore));
+        const scoreString = `FINANCIAL CHAOS — ${mainScore}/100`;
+
         document.getElementById('result-title').textContent = persona.name;
         document.getElementById('result-desc').textContent = persona.desc;
-        document.getElementById('card-emoji').textContent = persona.emoji;
+        document.getElementById('header-main-score').textContent = scoreString;
+
+        // Populate Card
+        document.getElementById('card-icon').innerHTML = `<i data-lucide="${persona.icon}" style="width:64px; height:64px; color: var(--accent-acid);"></i>`;
         document.getElementById('card-title').textContent = persona.name;
         document.getElementById('card-desc').textContent = persona.desc;
+        document.getElementById('card-main-score').textContent = scoreString;
         document.getElementById('card-roast-text').textContent = `"${roast}"`;
         document.getElementById('roast-text-full').textContent = `"${roast}"`;
         
@@ -374,14 +386,76 @@ const app = {
             breakdownHTML += `<div class="full-score-item"><div class="score-header"><span>${s.label}</span><span>${Math.round(s.val)} / 100</span></div><div class="score-track"><div class="score-fill" style="width: 0%;" data-target="${s.val}"></div></div></div>`;
         });
         document.getElementById('score-breakdown').innerHTML = breakdownHTML;
+        
+        // Render lucide icons
+        if(window.lucide) { window.lucide.createIcons(); }
+
         setTimeout(() => document.querySelectorAll('.score-fill').forEach(el => el.style.width = el.dataset.target + '%'), 500);
+
+        // Generate Image after DOM settles
+        setTimeout(() => this.generateShareImage(), 800);
+    },
+
+    generateShareImage() {
+        const cardTarget = document.getElementById('share-card-element');
+        if (!window.html2canvas) return;
+        
+        // Standardize card for image generation to avoid glitches
+        const originalTransform = cardTarget.style.transform;
+        cardTarget.style.transform = 'none';
+
+        html2canvas(cardTarget, {
+            scale: 2,
+            backgroundColor: '#0A0A0C', // Fallback base color
+            useCORS: true,
+            logging: false
+        }).then(canvas => {
+            cardTarget.style.transform = originalTransform;
+            canvas.toBlob(blob => {
+                appState.shareImageBlob = blob;
+                this.updateShareButton();
+            }, 'image/png');
+        }).catch(err => console.error('Image generation failed', err));
+    },
+
+    updateShareButton() {
+        const btn = document.getElementById('btn-share-result-text');
+        if (appState.shareImageBlob && navigator.canShare) {
+            const file = new File([appState.shareImageBlob], 'roast-my-statement.png', { type: 'image/png' });
+            if (!navigator.canShare({ files: [file] })) {
+                btn.textContent = "DOWNLOAD IMAGE";
+            } else {
+                btn.textContent = "SHARE MY PERSONALITY";
+            }
+        } else {
+            btn.textContent = "DOWNLOAD IMAGE";
+        }
     },
 
     shareResult() {
-        if (navigator.share) {
-            navigator.share({ title: 'Roast My Statement', text: `I just took the Financial Personality test and I was diagnosed as ${document.getElementById('result-title').textContent}!`, url: window.location.href }).catch(()=>{});
+        if (!appState.shareImageBlob) {
+            alert('Image is still generating or failed. Please screenshot the card!');
+            return;
+        }
+
+        const file = new File([appState.shareImageBlob], 'roast-my-statement.png', { type: 'image/png' });
+
+        if (navigator.canShare && navigator.canShare({ files: [file] })) {
+            navigator.share({
+                title: 'Roast My Statement',
+                text: `I just took the Financial Personality test and got diagnosed as ${document.getElementById('result-title').textContent}!`,
+                files: [file]
+            }).catch(console.error);
         } else {
-            alert('Screenshot the card to share with friends!');
+            // Fallback download
+            const url = URL.createObjectURL(appState.shareImageBlob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'roast-my-statement.png';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
         }
     },
 
@@ -563,7 +637,7 @@ const app = {
         const baseUrl = window.location.origin + window.location.pathname;
         const challengeUrl = val ? `${baseUrl}?challenge=${encodeURIComponent(val)}` : `${baseUrl}?challenge=1`;
         
-        const shareText = `I just found out what kind of spender I am 💀\n\nThink you can do better?\nTake the Financial Personality quiz:\n\n${challengeUrl}`;
+        const shareText = `I just found out what kind of spender I am.\n\nThink you can do better?\nTake the Financial Personality quiz:\n\n${challengeUrl}`;
         
         if (tryNative && navigator.share) {
             navigator.share({ title: 'You\'ve been challenged.', text: shareText }).catch(console.error);

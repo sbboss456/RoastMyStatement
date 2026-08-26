@@ -49,7 +49,7 @@
     <!-- Navigation -->
     <nav class="navbar reveal">
         <div class="logo">
-            <span class="logo-icon spin-slow">✱</span>
+            <span class="logo-icon spin-slow"><i data-lucide="asterisk"></i></span>
             ROAST MY STATEMENT
         </div>
         <div class="nav-links">
@@ -163,7 +163,8 @@
                 <span class="tech-label highlight-acid hidden-if-challenged" id="normal-diagnosis-msg">DIAGNOSIS COMPLETE</span>
                 <h2>YOUR FINANCIAL PERSONALITY</h2>
                 <h1 id="result-title" class="huge-title">THE FINANCIAL MENACE</h1>
-                <p id="result-desc" class="result-subtitle">You don't spend money. You release it into the wild.</p>
+                <div class="main-score-display tech-mono mt-2" id="header-main-score">FINANCIAL CHAOS — 87/100</div>
+                <p id="result-desc" class="result-subtitle mt-2">You don't spend money. You release it into the wild.</p>
             </div>
 
             <div class="result-layout fade-in-delayed">
@@ -173,10 +174,13 @@
                     <div class="share-card" id="share-card-element">
                         <div class="card-glass-layer"></div>
                         <div class="card-brand">
-                            <span class="logo-icon">✱</span> ROAST MY STATEMENT
+                            <i data-lucide="asterisk" style="width:14px; height:14px; display:inline-block; vertical-align:middle;"></i> ROAST MY STATEMENT
                         </div>
-                        <div class="card-emoji" id="card-emoji">💀</div>
+                        <div class="card-emoji" id="card-icon">
+                            <i data-lucide="skull" style="width:64px; height:64px;"></i>
+                        </div>
                         <div class="card-identity">
+                            <div class="card-score-banner tech-mono highlight-acid mb-2" id="card-main-score">FINANCIAL CHAOS — 87/100</div>
                             <h2 id="card-title">THE FINANCIAL MENACE</h2>
                             <p id="card-desc">You don't spend money. You release it into the wild.</p>
                         </div>
@@ -211,7 +215,7 @@
 
                     <div class="action-buttons-stack">
                         <button class="action-button primary-cta pulse-glow" id="btn-share-result">
-                            <span>SHARE MY RESULT</span>
+                            <span id="btn-share-result-text">SHARE MY PERSONALITY</span>
                         </button>
                         <button class="action-button subtle" id="btn-restart">
                             <span>TRY AGAIN / REDEEM YOURSELF</span>
@@ -293,7 +297,7 @@
                 <!-- Challenge Preview Card -->
                 <div class="challenge-preview-card mt-4">
                     <div class="card-brand mb-2">
-                        <span class="logo-icon">✱</span> ROAST MY STATEMENT
+                        <i data-lucide="asterisk" style="width:14px; height:14px; display:inline-block; vertical-align:middle;"></i> ROAST MY STATEMENT
                     </div>
                     <div class="preview-text">
                         <strong class="highlight-acid" id="preview-title">You've been challenged.</strong>
@@ -322,6 +326,8 @@
     </footer>
 
     <!-- Scripts -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
     <script src="js/roasts.js"></script>
     <script src="js/app.js"></script>
