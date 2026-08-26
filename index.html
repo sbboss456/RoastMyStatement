@@ -68,15 +68,15 @@
             <div class="sys-badge flicker-text">
                 <span class="indicator-light"></span> SYSTEM READY // V. 1.1
             </div>
-            <h1 class="hero-title">
+            <h1 class="hero-title" id="hero-title-text">
                 WHAT KIND OF <br>
                 <span class="highlight-acid skew-text">SPENDER ARE YOU?</span>
             </h1>
-            <p class="hero-subtitle">Answer a few questions. Discover your financial personality. Get roasted abruptly and brutally. (100% Local)</p>
+            <p class="hero-subtitle" id="hero-subtitle-text">Answer a few questions. Discover your financial personality. Get roasted abruptly and brutally. (100% Local)</p>
             
             <div class="cta-group">
                 <button class="action-button primary-cta pulse-glow" id="btn-start-quiz">
-                    <span>DISCOVER MY PERSONALITY</span>
+                    <span id="btn-start-span">DISCOVER MY PERSONALITY</span>
                 </button>
                 <div class="secondary-cta-wrapper mt-4">
                     <span class="tech-label display-block mb-2">OR</span>
@@ -86,7 +86,7 @@
                 </div>
             </div>
 
-            <!-- Legacy Uploader Section (Hidden inside Home view) -->
+            <!-- Legacy Uploader Section -->
             <div id="legacy-uploader" class="hidden mt-4">
                 <div class="tech-folder-tab"><span>INPUT.CSV</span></div>
                 <div class="uploader-card" id="drop-zone">
@@ -94,7 +94,6 @@
                     <div class="corner-bracket top-right"></div>
                     <div class="corner-bracket bottom-left"></div>
                     <div class="corner-bracket bottom-right"></div>
-                    
                     <div class="uploader-content">
                         <h2 class="upload-title">CSV ENGINE OFFLINE</h2>
                         <p class="upload-subtitle">Module in development. Take the quiz instead.</p>
@@ -102,7 +101,6 @@
                 </div>
             </div>
         </section>
-
 
         <!-- ==========================================
              VIEW: QUIZ CONTAINER
@@ -123,7 +121,6 @@
             </div>
         </section>
 
-
         <!-- ==========================================
              VIEW: ANALYZING (TRANSITION)
              ========================================== -->
@@ -136,14 +133,18 @@
             </div>
         </section>
 
-
         <!-- ==========================================
              VIEW: RESULT
              ========================================== -->
         <section id="view-result" class="view hidden">
             
+            <div class="challenge-accepted-msg hidden fade-in" id="challenge-accepted-msg">
+                <span class="tech-label highlight-acid"><span class="blink">></span> CHALLENGE ACCEPTED</span>
+                <p>Now you know what kind of spender you actually are.</p>
+            </div>
+
             <div class="result-header fade-in">
-                <span class="tech-label highlight-acid">DIAGNOSIS COMPLETE</span>
+                <span class="tech-label highlight-acid hidden-if-challenged" id="normal-diagnosis-msg">DIAGNOSIS COMPLETE</span>
                 <h2>YOUR FINANCIAL PERSONALITY</h2>
                 <h1 id="result-title" class="huge-title">THE FINANCIAL MENACE</h1>
                 <p id="result-desc" class="result-subtitle">You don't spend money. You release it into the wild.</p>
@@ -153,33 +154,26 @@
                 
                 <!-- Left Col: The Share Card -->
                 <div class="share-card-wrapper">
-                    <!-- 9:16 Aspect Ratio Card -->
                     <div class="share-card" id="share-card-element">
                         <div class="card-glass-layer"></div>
-                        
                         <div class="card-brand">
                             <span class="logo-icon">✱</span> ROAST MY STATEMENT
                         </div>
-                        
                         <div class="card-emoji" id="card-emoji">💀</div>
-                        
                         <div class="card-identity">
                             <h2 id="card-title">THE FINANCIAL MENACE</h2>
                             <p id="card-desc">You don't spend money. You release it into the wild.</p>
                         </div>
-                        
                         <div class="card-scores" id="card-scores">
                             <!-- Injected via JS -->
                         </div>
-                        
                         <div class="card-roast">
                             <span class="tech-mono acid-text">>> FATAL ERROR:</span>
                             <p id="card-roast-text">"Your wallet doesn't have a spending problem. It has a survival problem."</p>
                         </div>
-                        
                         <div class="card-footer">
                             <span>roastmystatement.com</span>
-                            <span class="tech-mono barcode">|||| ||| | || |||</span>
+                            <span class="tech-mono">THINK YOU CAN BEAT THIS? →</span>
                         </div>
                     </div>
                 </div>
@@ -200,18 +194,20 @@
                     </div>
 
                     <div class="action-buttons-stack">
-                        <button class="action-button primary-cta pulse-glow" id="btn-share">
-                            <span>SHARE MY PERSONALITY</span>
+                        <button class="action-button primary-cta pulse-glow" id="btn-share-result">
+                            <span>SHARE MY RESULT</span>
                         </button>
                         <button class="action-button subtle" id="btn-restart">
                             <span>TRY AGAIN / REDEEM YOURSELF</span>
                         </button>
                     </div>
 
+                    <!-- VIRAL LOOP: ROAST SOMEONE ELSE -->
                     <div class="viral-loop-box mt-4">
-                        <span class="tech-mono text-muted mb-2 display-block">Think your friend is worse?</span>
-                        <button class="action-button outline" onclick="alert('Copy link to clipboard implemented here!')">
-                            <span>COPY LINK TO ROAST THEM →</span>
+                        <h2>THINK YOUR FRIEND IS WORSE?</h2>
+                        <span class="tech-mono text-muted mb-4 display-block mt-2">Send them this quiz and find out.</span>
+                        <button class="action-button outline highlight-hover" id="btn-open-challenge">
+                            <span>ROAST SOMEONE ELSE →</span>
                         </button>
                     </div>
                 </div>
@@ -220,6 +216,49 @@
         </section>
 
     </main>
+
+    <!-- ==========================================
+         MODAL: CHALLENGE SOMEONE
+         ========================================== -->
+    <div id="challenge-modal" class="modal hidden">
+        <div class="modal-backdrop" id="modal-backdrop"></div>
+        <div class="modal-content glossy-panel">
+            <button class="modal-close" id="btn-close-modal">✕</button>
+            
+            <div class="modal-header">
+                <span class="tech-label highlight-acid"><span class="blink">></span> INITIATE CHALLENGE</span>
+                <h2 class="mt-2">WHO ARE WE ROASTING?</h2>
+            </div>
+            
+            <div class="modal-body mt-4">
+                <div class="input-group">
+                    <label for="friend-name" class="tech-mono text-muted display-block mb-2">FRIEND'S NAME (OPTIONAL)</label>
+                    <input type="text" id="friend-name" class="tech-input" placeholder="e.g. Rahul" autocomplete="off" maxlength="15">
+                </div>
+                
+                <!-- Challenge Preview Card -->
+                <div class="challenge-preview-card mt-4">
+                    <div class="card-brand mb-2">
+                        <span class="logo-icon">✱</span> ROAST MY STATEMENT
+                    </div>
+                    <div class="preview-text">
+                        <strong class="highlight-acid" id="preview-title">You've been challenged.</strong>
+                        <p class="mt-2 text-muted">Let's find out what kind of spender you actually are.</p>
+                        <p class="tech-mono text-muted mt-4">TAKE THE QUIZ →</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="modal-footer mt-4">
+                <button class="action-button primary-cta w-full pulse-glow" id="btn-share-challenge">
+                    <span>SHARE CHALLENGE</span>
+                </button>
+                <button class="action-button outline w-full mt-2 subtle" id="btn-copy-challenge">
+                    <span id="copy-btn-text">COPY CHALLENGE LINK</span>
+                </button>
+            </div>
+        </div>
+    </div>
 
     <!-- Footer -->
     <footer class="reveal">

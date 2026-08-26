@@ -1,12 +1,11 @@
 /**
  * ROAST MY STATEMENT - FRONTEND APP
- * Financial Personality Engine
+ * Financial Personality Engine + Viral Loop
  */
 
 // ==========================================
 // DATA STRUCTURES
 // ==========================================
-
 const QUESTIONS = [
     {
         id: "q1",
@@ -94,105 +93,56 @@ const QUESTIONS = [
 
 const PERSONALITIES = [
     {
-        id: "boss",
-        name: "THE FINANCIAL BOSS",
-        emoji: "👑",
-        desc: "You have terrifyingly good control over your money.",
-        roasts: [
-            "You probably have a spreadsheet for buying groceries, you absolute psycho.",
-            "You have lots of money but no friends to spend it with.",
-            "Your bank account is thriving, but your social life is a barren wasteland."
-        ],
+        id: "boss", name: "THE FINANCIAL BOSS", emoji: "👑", desc: "You have terrifyingly good control over your money.",
+        roasts: ["You probably have a spreadsheet for buying groceries, you absolute psycho.", "You have lots of money but no friends to spend it with.", "Your bank account is thriving, but your social life is a barren wasteland."],
         condition: (scores) => scores.saving > 40 && scores.chaos < 30
     },
     {
-        id: "foodie",
-        name: "THE FOODIE MENACE",
-        emoji: "🍔",
-        desc: "80% of your income is converted directly into calories.",
-        roasts: [
-            "The delivery driver knows you better than your parents do.",
-            "Your financial portfolio is just a collection of Zomato/Swiggy receipts.",
-            "You spend more on food you could have made at home for 20 rupees."
-        ],
+        id: "foodie", name: "THE FOODIE MENACE", emoji: "🍔", desc: "80% of your income is converted directly into calories.",
+        roasts: ["The delivery driver knows you better than your parents do.", "Your financial portfolio is just a collection of Zomato/Swiggy receipts.", "You spend more on food you could have made at home for 20 rupees."],
         condition: (scores) => scores.food > 30
     },
     {
-        id: "goblin",
-        name: "THE DIGITAL GOBLIN",
-        emoji: "🎮",
-        desc: "You buy pixels instead of physical possessions.",
-        roasts: [
-            "You are paying for 4 streaming services you haven't opened in three months.",
-            "Your steam library has more unplayed games than your bank has rupees.",
-            "You probably paid for a premium skin while eating instant noodles."
-        ],
+        id: "goblin", name: "THE DIGITAL GOBLIN", emoji: "🎮", desc: "You buy pixels instead of physical possessions.",
+        roasts: ["You are paying for 4 streaming services you haven't opened in three months.", "Your steam library has more unplayed games than your bank has rupees.", "You probably paid for a premium skin while eating instant noodles."],
         condition: (scores) => scores.digital > 25
     },
     {
-        id: "impulse",
-        name: "THE IMPULSE BUYER",
-        emoji: "🛍️",
-        desc: "You see it. You like it. You buy it. You regret it.",
-        roasts: [
-            "Your packages arrive faster than your paycheck.",
-            "You treat 'Add to Cart' like a stress relief button. Grow up.",
-            "Marketers love you because you fall for a '10% off' on a thing you don't need."
-        ],
+        id: "impulse", name: "THE IMPULSE BUYER", emoji: "🛍️", desc: "You see it. You like it. You buy it. You regret it.",
+        roasts: ["Your packages arrive faster than your paycheck.", "You treat 'Add to Cart' like a stress relief button. Grow up.", "Marketers love you because you fall for a '10% off' on a thing you don't need."],
         condition: (scores) => scores.impulse > 40
     },
     {
-        id: "menace",
-        name: "THE FINANCIAL MENACE",
-        emoji: "💀",
-        desc: "You don't spend money. You release it into the wild.",
-        roasts: [
-            "Your wallet doesn't have a spending problem. It has a survival problem.",
-            "Your bank statement reads like a cry for help.",
-            "You are exactly one minor inconvenience away from total bankruptcy."
-        ],
+        id: "menace", name: "THE FINANCIAL MENACE", emoji: "💀", desc: "You don't spend money. You release it into the wild.",
+        roasts: ["Your wallet doesn't have a spending problem. It has a survival problem.", "Your bank statement reads like a cry for help.", "You are exactly one minor inconvenience away from total bankruptcy."],
         condition: (scores) => scores.chaos > 45 || (scores.chaos > 30 && scores.impulse > 30)
     },
     {
-        id: "default",
-        name: "THE AVERAGE SURVIVOR",
-        emoji: "😐",
-        desc: "You are financially floating. Neither rich nor broke.",
-        roasts: [
-            "Your financial life is painfully average and profoundly boring.",
-            "You try to save but somehow end up exactly at zero by month end.",
-            "You exist in a constant state of 'I really shouldn't buy this' and then buying it anyway."
-        ],
-        condition: () => true // Fallback
+        id: "default", name: "THE AVERAGE SURVIVOR", emoji: "😐", desc: "You are financially floating. Neither rich nor broke.",
+        roasts: ["Your financial life is painfully average and profoundly boring.", "You try to save but somehow end up exactly at zero by month end.", "You exist in a constant state of 'I really shouldn't buy this' and then buying it anyway."],
+        condition: () => true
     }
 ];
-
 
 // ==========================================
 // STATE MANAGEMENT
 // ==========================================
-
 const appState = {
     currentQuestion: 0,
-    scores: {
-        saving: 0,
-        chaos: 0,
-        impulse: 0,
-        food: 0,
-        digital: 0
-    }
+    isChallenged: false,
+    challengerName: null,
+    scores: { saving: 0, chaos: 0, impulse: 0, food: 0, digital: 0 }
 };
 
 // ==========================================
 // APP LOGIC
 // ==========================================
-
 const app = {
-    // DOM Elements
     views: {},
     
     init() {
         this.cacheDOM();
+        this.checkChallengeURL(); // Check for viral loop params
         this.bindEvents();
         this.initCursor();
         this.initObservers();
@@ -208,42 +158,72 @@ const app = {
         this.qContainer = document.getElementById('question-container');
         this.progressBar = document.getElementById('progress-bar');
         this.progressText = document.getElementById('progress-text');
+        this.modal = document.getElementById('challenge-modal');
+        this.inputFriendName = document.getElementById('friend-name');
     },
 
     bindEvents() {
+        // Main Quiz Flow
         document.getElementById('btn-start-quiz').addEventListener('click', () => this.startQuiz());
         document.getElementById('btn-show-csv').addEventListener('click', () => {
             document.getElementById('legacy-uploader').classList.remove('hidden');
             document.getElementById('legacy-uploader').scrollIntoView({ behavior: 'smooth' });
         });
         
+        // Results
         document.getElementById('btn-restart').addEventListener('click', () => this.resetQuiz());
-        document.getElementById('btn-share').addEventListener('click', () => this.triggerShare());
+        document.getElementById('btn-share-result').addEventListener('click', () => this.shareResult());
+        
+        // Viral Challenge Loop
+        document.getElementById('btn-open-challenge').addEventListener('click', () => this.openChallengeModal());
+        document.getElementById('btn-close-modal').addEventListener('click', () => this.closeChallengeModal());
+        document.getElementById('modal-backdrop').addEventListener('click', () => this.closeChallengeModal());
+        this.inputFriendName.addEventListener('input', () => this.updateChallengePreview());
+        document.getElementById('btn-share-challenge').addEventListener('click', () => this.shareChallenge(true));
+        document.getElementById('btn-copy-challenge').addEventListener('click', () => this.shareChallenge(false));
+    },
+
+    // --- SETUP VIRAL LOOP LANDING ---
+    checkChallengeURL() {
+        const params = new URLSearchParams(window.location.search);
+        if (params.has('challenge')) {
+            appState.isChallenged = true;
+            const cName = params.get('challenge');
+            appState.challengerName = (cName && cName !== "1" && cName.trim() !== "") ? cName.trim() : null;
+            
+            // Mutate landing page
+            const heroTitle = document.getElementById('hero-title-text');
+            const heroSub = document.getElementById('hero-subtitle-text');
+            const btnSpan = document.getElementById('btn-start-span');
+            
+            if (appState.challengerName) {
+                heroTitle.innerHTML = `<span class="highlight-acid skew-text">${appState.challengerName.toUpperCase()}</span><br>THINKS YOU CAN'T BE WORSE.`;
+            } else {
+                heroTitle.innerHTML = `YOU'VE BEEN <br><span class="highlight-acid skew-text">CHALLENGED.</span>`;
+            }
+            
+            heroSub.textContent = "Prove them wrong. Discover your Financial Personality.";
+            btnSpan.textContent = "ACCEPT THE CHALLENGE →";
+        }
     },
 
     // --- CURSOR AND FX ---
-
     initCursor() {
         const dot = document.getElementById('cursor-dot');
         const ring = document.getElementById('cursor-ring');
-        
         if (window.matchMedia("(any-pointer: fine)").matches) {
             document.addEventListener('mousemove', (e) => {
                 dot.style.transform = `translate(${e.clientX}px, ${e.clientY}px)`;
-                requestAnimationFrame(() => {
-                    ring.style.transform = `translate(${e.clientX}px, ${e.clientY}px)`;
-                });
+                requestAnimationFrame(() => ring.style.transform = `translate(${e.clientX}px, ${e.clientY}px)`);
             });
-
             const applyHover = () => {
-                document.querySelectorAll('a, button, .answer-btn, .uploader-card').forEach(el => {
+                document.querySelectorAll('a, button, .answer-btn, .uploader-card, input').forEach(el => {
                     if (el.dataset.cursorBound) return;
                     el.addEventListener('mouseenter', () => ring.classList.add('active'));
                     el.addEventListener('mouseleave', () => ring.classList.remove('active'));
                     el.dataset.cursorBound = true;
                 });
             };
-            // Run on init and after DOM changes
             applyHover();
             this.applyCursorHover = applyHover;
         } else {
@@ -254,10 +234,7 @@ const app = {
     initObservers() {
         const obs = new IntersectionObserver((entries, observer) => {
             entries.forEach(e => {
-                if (e.isIntersecting) {
-                    e.target.classList.add('active');
-                    observer.unobserve(e.target);
-                }
+                if (e.isIntersecting) { e.target.classList.add('active'); observer.unobserve(e.target); }
             });
         }, { threshold: 0.1 });
         document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
@@ -276,7 +253,6 @@ const app = {
     },
 
     // --- QUIZ FLOW ---
-
     startQuiz() {
         appState.currentQuestion = 0;
         appState.scores = { saving: 0, chaos: 0, impulse: 0, food: 0, digital: 0 };
@@ -285,113 +261,56 @@ const app = {
     },
 
     renderQuestion() {
-        const qIndex = appState.currentQuestion;
-        if (qIndex >= QUESTIONS.length) {
-            this.finishQuiz();
-            return;
-        }
+        if (appState.currentQuestion >= QUESTIONS.length) return this.finishQuiz();
+        const q = QUESTIONS[appState.currentQuestion];
+        this.progressBar.style.width = `${((appState.currentQuestion) / QUESTIONS.length) * 100}%`;
+        this.progressText.textContent = `0${appState.currentQuestion + 1} / 0${QUESTIONS.length}`;
 
-        const q = QUESTIONS[qIndex];
-        
-        // Update Progress
-        const pPercent = ((qIndex) / QUESTIONS.length) * 100;
-        this.progressBar.style.width = `${pPercent}%`;
-        this.progressText.textContent = `0${qIndex + 1} / 0${QUESTIONS.length}`;
-
-        // Render HTML
-        let html = `
-            <div class="question-card" id="q-card-${qIndex}">
-                <h2 class="question-title">${q.text}</h2>
-                <div class="answer-grid">
-        `;
-        
+        let html = `<div class="question-card" id="q-card"><h2 class="question-title">${q.text}</h2><div class="answer-grid">`;
         q.options.forEach((opt, i) => {
-            html += `
-                <button class="answer-btn" onclick="app.handleAnswer(${qIndex}, ${i})">
-                    <span>${opt.text}</span>
-                </button>
-            `;
+            html += `<button class="answer-btn" onclick="app.handleAnswer(${i})"><span>${opt.text}</span></button>`;
         });
-        
         html += `</div></div>`;
         this.qContainer.innerHTML = html;
         this.applyCursorHover();
     },
 
-    handleAnswer(qIndex, optIndex) {
-        const option = QUESTIONS[qIndex].options[optIndex];
-        
-        // Accumulate impact
+    handleAnswer(optIndex) {
+        const option = QUESTIONS[appState.currentQuestion].options[optIndex];
         for (const [trait, value] of Object.entries(option.impact)) {
             appState.scores[trait] += value;
         }
-
-        // Animate out
-        const card = document.getElementById(`q-card-${qIndex}`);
-        card.style.opacity = '0';
-        card.style.transform = 'translateY(-20px)';
-        card.style.transition = 'all 0.2s';
-        
-        setTimeout(() => {
-            appState.currentQuestion++;
-            this.renderQuestion();
-        }, 200);
+        const card = document.getElementById('q-card');
+        card.style.opacity = '0'; card.style.transform = 'translateY(-20px)'; card.style.transition = 'all 0.2s';
+        setTimeout(() => { appState.currentQuestion++; this.renderQuestion(); }, 200);
     },
 
     finishQuiz() {
         this.progressBar.style.width = `100%`;
-        setTimeout(() => {
-            this.switchView('analyzing');
-            this.runTerminalAnimation();
-        }, 300);
+        setTimeout(() => { this.switchView('analyzing'); this.runTerminalAnimation(); }, 300);
     },
 
     // --- TERMINAL & RESULTS ---
-
     runTerminalAnimation() {
-        const lines = [
-            "INITIATING DIAGNOSTIC PROTOCOL...",
-            "ANALYZING SPENDING BEHAVIOR...",
-            "CALCULATING IMPULSE DECISIONS...",
-            "WARNING: SELF-CONTROL MODULE NOT FOUND",
-            "CROSS-REFERENCING TERRIBLE CHOICES...",
-            "PERSONALITY DETECTED."
-        ];
-        
+        const lines = ["INITIATING DIAGNOSTIC PROTOCOL...", "ANALYZING SPENDING BEHAVIOR...", "CALCULATING IMPULSE DECISIONS...", "WARNING: SELF-CONTROL MODULE NOT FOUND", "CROSS-REFERENCING TERRIBLE CHOICES...", "PERSONALITY DETECTED."];
         const out = document.getElementById('terminal-output');
-        out.innerHTML = "";
-        document.getElementById('main-ticker').classList.add('alert-mode');
-
+        out.innerHTML = ""; document.getElementById('main-ticker').classList.add('alert-mode');
+        
         let i = 0;
         const interval = setInterval(() => {
             if (i < lines.length) {
-                const p = document.createElement('div');
-                p.className = 'terminal-line';
-                p.textContent = `> ${lines[i]}`;
-                out.appendChild(p);
-                i++;
+                const p = document.createElement('div'); p.className = 'terminal-line'; p.textContent = `> ${lines[i]}`; out.appendChild(p); i++;
             } else {
-                clearInterval(interval);
-                setTimeout(() => this.calculateAndShowResult(), 800);
+                clearInterval(interval); setTimeout(() => this.calculateAndShowResult(), 800);
             }
         }, 400);
     },
 
     calculateAndShowResult() {
-        // Evaluate condition functions in order
-        let foundPersonality = PERSONALITIES[PERSONALITIES.length - 1]; // Default
-        for (const p of PERSONALITIES) {
-            if (p.condition(appState.scores)) {
-                foundPersonality = p;
-                break;
-            }
-        }
-
-        // Generate roast (random from options)
+        let foundPersonality = PERSONALITIES[PERSONALITIES.length - 1];
+        for (const p of PERSONALITIES) { if (p.condition(appState.scores)) { foundPersonality = p; break; } }
         const roast = foundPersonality.roasts[Math.floor(Math.random() * foundPersonality.roasts.length)];
         
-        // Normalize scores for bars (0 - 100)
-        // Traits usually land between -15 and +100 depending on answers.
         const normalized = {
             chaos: Math.min(100, Math.max(5, appState.scores.chaos * 2 + 20)),
             impulse: Math.min(100, Math.max(5, appState.scores.impulse * 2 + 20)),
@@ -405,86 +324,99 @@ const app = {
     },
 
     renderResultUI(persona, roast, scores) {
-        // Main headers
+        if (appState.isChallenged) {
+            document.getElementById('challenge-accepted-msg').classList.remove('hidden');
+            document.getElementById('normal-diagnosis-msg').classList.add('hidden');
+        }
+
         document.getElementById('result-title').textContent = persona.name;
         document.getElementById('result-desc').textContent = persona.desc;
-        
-        // 9:16 Card
         document.getElementById('card-emoji').textContent = persona.emoji;
         document.getElementById('card-title').textContent = persona.name;
         document.getElementById('card-desc').textContent = persona.desc;
         document.getElementById('card-roast-text').textContent = `"${roast}"`;
         document.getElementById('roast-text-full').textContent = `"${roast}"`;
         
-        // Small Bars on Card
         const top3Scores = [
-            { label: 'CHAOS', val: scores.chaos },
-            { label: 'IMPULSE', val: scores.impulse },
-            { label: 'SAVING', val: scores.saving }
+            { label: 'CHAOS', val: scores.chaos }, { label: 'IMPULSE', val: scores.impulse }, { label: 'SAVING', val: scores.saving }
         ];
         
         let cardScoresHTML = '';
         top3Scores.forEach(s => {
-            cardScoresHTML += `
-                <div class="score-line">
-                    <span class="score-name">${s.label}</span>
-                    <div class="score-value-bar"><div class="score-inner" style="width: ${Math.max(10, s.val)}%;"></div></div>
-                </div>
-            `;
+            cardScoresHTML += `<div class="score-line"><span class="score-name">${s.label}</span><div class="score-value-bar"><div class="score-inner" style="width: ${Math.max(10, s.val)}%;"></div></div></div>`;
         });
         document.getElementById('card-scores').innerHTML = cardScoresHTML;
 
-        // Big detailed Breakdown
         const allScoresList = [
-            { label: 'FINANCIAL CHAOS', val: scores.chaos },
-            { label: 'IMPULSE CONTROL', val: 100 - scores.impulse }, // inversed for logic
-            { label: 'SAVING ABILITY', val: scores.saving },
-            { label: 'FOOD DEPENDENCY', val: scores.food },
-            { label: 'DIGITAL HOARDING', val: scores.digital }
+            { label: 'FINANCIAL CHAOS', val: scores.chaos }, { label: 'IMPULSE CONTROL', val: 100 - scores.impulse },
+            { label: 'SAVING ABILITY', val: scores.saving }, { label: 'FOOD DEPENDENCY', val: scores.food }, { label: 'DIGITAL HOARDING', val: scores.digital }
         ];
         
         let breakdownHTML = '';
         allScoresList.forEach(s => {
-            breakdownHTML += `
-                <div class="full-score-item">
-                    <div class="score-header">
-                        <span>${s.label}</span>
-                        <span>${Math.round(s.val)} / 100</span>
-                    </div>
-                    <div class="score-track">
-                        <div class="score-fill" style="width: 0%;" data-target="${s.val}"></div>
-                    </div>
-                </div>
-            `;
+            breakdownHTML += `<div class="full-score-item"><div class="score-header"><span>${s.label}</span><span>${Math.round(s.val)} / 100</span></div><div class="score-track"><div class="score-fill" style="width: 0%;" data-target="${s.val}"></div></div></div>`;
         });
         document.getElementById('score-breakdown').innerHTML = breakdownHTML;
-
-        // Animate breakdown bars shortly after render
-        setTimeout(() => {
-            document.querySelectorAll('.score-fill').forEach(el => {
-                el.style.width = el.dataset.target + '%';
-            });
-        }, 500);
+        setTimeout(() => document.querySelectorAll('.score-fill').forEach(el => el.style.width = el.dataset.target + '%'), 500);
     },
 
-    triggerShare() {
-        // Native Web Share API if available
+    shareResult() {
         if (navigator.share) {
-            navigator.share({
-                title: 'Roast My Statement',
-                text: `I just took the Financial Personality test and I am ${document.getElementById('result-title').textContent}!`,
-                url: window.location.href
-            }).catch(console.error);
+            navigator.share({ title: 'Roast My Statement', text: `I just took the Financial Personality test and I was diagnosed as ${document.getElementById('result-title').textContent}!`, url: window.location.href }).catch(()=>{});
         } else {
-            alert('Screenshot the card on the left to share with your friends!');
+            alert('Screenshot the card to share with friends!');
         }
     },
 
     resetQuiz() {
+        // Strip URL param without reload
+        if (window.history.replaceState) { window.history.replaceState(null, '', window.location.pathname); }
+        appState.isChallenged = false; appState.challengerName = null;
+        
+        document.getElementById('hero-title-text').innerHTML = `WHAT KIND OF <br><span class="highlight-acid skew-text">SPENDER ARE YOU?</span>`;
+        document.getElementById('hero-subtitle-text').textContent = "Answer a few questions. Discover your financial personality. Get roasted abruptly and brutally. (100% Local)";
+        document.getElementById('btn-start-span').textContent = "DISCOVER MY PERSONALITY";
+        document.getElementById('challenge-accepted-msg').classList.add('hidden');
+        document.getElementById('normal-diagnosis-msg').classList.remove('hidden');
         document.getElementById('main-ticker').classList.remove('alert-mode');
         this.switchView('home');
+    },
+
+    // --- VIRAL CHALLENGE MODAL ---
+    openChallengeModal() {
+        this.inputFriendName.value = '';
+        this.updateChallengePreview();
+        this.modal.classList.remove('hidden');
+    },
+
+    closeChallengeModal() {
+        this.modal.classList.add('hidden');
+    },
+
+    updateChallengePreview() {
+        const val = this.inputFriendName.value.trim();
+        const pt = document.getElementById('preview-title');
+        pt.textContent = val ? `${val}, you've been challenged.` : `You've been challenged.`;
+    },
+
+    shareChallenge(tryNative) {
+        const val = this.inputFriendName.value.trim();
+        const baseUrl = window.location.origin + window.location.pathname;
+        const challengeUrl = val ? `${baseUrl}?challenge=${encodeURIComponent(val)}` : `${baseUrl}?challenge=1`;
+        
+        const shareText = `I just found out what kind of spender I am 💀\n\nThink you can do better?\nTake the Financial Personality quiz:\n\n${challengeUrl}`;
+        
+        if (tryNative && navigator.share) {
+            navigator.share({ title: 'You\'ve been challenged.', text: shareText }).catch(console.error);
+            this.closeChallengeModal();
+        } else {
+            navigator.clipboard.writeText(shareText).then(() => {
+                const btnSpan = document.getElementById('copy-btn-text');
+                btnSpan.textContent = "COPIED ✓";
+                setTimeout(() => { btnSpan.textContent = "COPY CHALLENGE LINK"; this.closeChallengeModal(); }, 1500);
+            }).catch(() => alert('Failed to copy.'));
+        }
     }
 };
 
-// Start application
 app.init();
