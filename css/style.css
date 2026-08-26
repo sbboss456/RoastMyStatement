@@ -465,3 +465,7 @@ body.android-native-app .ticket-stub {
 body.android-native-app .stub-barcode {
     height: 2rem !important;
 }
+
+/* Prevent background scrolling when modal is open (Modern Browsers/WebViews) */
+body:has(.modal:not(.hidden)) { overflow: hidden; }
+
