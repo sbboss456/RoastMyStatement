@@ -631,7 +631,8 @@ const app = {
             quiz: document.getElementById('view-quiz'),
             analyzing: document.getElementById('view-analyzing'),
             result: document.getElementById('view-result'),
-            csvResult: document.getElementById('view-csv-result')
+            csvResult: document.getElementById('view-csv-result'),
+            finance: document.getElementById('view-finance')
         };
         this.qContainer = document.getElementById('question-container');
         this.progressBar = document.getElementById('progress-bar');
