@@ -609,9 +609,169 @@ const financeManager = {
     }
 };
 
-// ==========================================
-// MAIN APP LOGIC
-// ==========================================
+const defaultAvatarSvg = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="none" stroke="%238E93A4" stroke-width="4"><rect x="10" y="10" width="80" height="80" rx="10" /><circle cx="50" cy="40" r="15" /><path d="M20 90 Q50 60 80 90" /></svg>';
+
+const settingsManager = {
+    settings: {
+        avatar: null,
+        displayName: '',
+        showAvatar: true,
+        showName: true
+    },
+    cropperInstance: null,
+
+    init() {
+        this.loadProfile();
+        this.bindEvents();
+    },
+
+    loadProfile() {
+        const stored = localStorage.getItem('roast_settings');
+        if (stored) {
+            try { this.settings = JSON.parse(stored); } catch(e) {}
+        }
+        this.syncUI();
+    },
+
+    saveProfile() {
+        this.settings.displayName = document.getElementById('settings-display-name').value.trim();
+        this.settings.showAvatar = document.getElementById('settings-show-avatar').checked;
+        this.settings.showName = document.getElementById('settings-show-name').checked;
+        localStorage.setItem('roast_settings', JSON.stringify(this.settings));
+    },
+
+    syncUI() {
+        const avPath = this.settings.avatar || defaultAvatarSvg;
+        document.getElementById('settings-avatar-preview').src = avPath;
+        document.getElementById('settings-display-name').value = this.settings.displayName;
+        document.getElementById('settings-show-avatar').checked = this.settings.showAvatar;
+        document.getElementById('settings-show-name').checked = this.settings.showName;
+    },
+
+    bindEvents() {
+        document.getElementById('avatar-upload-input').addEventListener('change', (e) => this.handleImageSelect(e));
+    },
+
+    openSettings() {
+        app.switchView('settings');
+    },
+
+    handleImageSelect(e) {
+        if(e.target.files && e.target.files[0]) {
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                this.openCropper(event.target.result);
+            };
+            reader.readAsDataURL(e.target.files[0]);
+        }
+        e.target.value = ''; // reset so same file can fire change again
+    },
+
+    openCropper(imgSrc) {
+        const modal = document.getElementById('cropper-modal');
+        const img = document.getElementById('cropper-image');
+        img.src = imgSrc;
+        modal.classList.remove('hidden');
+
+        if(this.cropperInstance) this.cropperInstance.destroy();
+        
+        setTimeout(() => {
+            if(window.Cropper) {
+                this.cropperInstance = new Cropper(img, {
+                    aspectRatio: 1,
+                    viewMode: 1,
+                    dragMode: 'move',
+                    autoCropArea: 0.8,
+                    background: false,
+                    guides: false,
+                    highlight: false
+                });
+            }
+        }, 100);
+    },
+
+    closeCropper() {
+        document.getElementById('cropper-modal').classList.add('hidden');
+        if(this.cropperInstance) this.cropperInstance.destroy();
+    },
+
+    cropImage() {
+        if(!this.cropperInstance) return;
+        const canvas = this.cropperInstance.getCroppedCanvas({ width: 300, height: 300 });
+        if(canvas) {
+            const base64 = canvas.toDataURL('image/jpeg', 0.8);
+            this.settings.avatar = base64;
+            this.saveProfile();
+            this.syncUI();
+            this.closeCropper();
+        }
+    },
+
+    removeAvatar() {
+        this.settings.avatar = null;
+        this.saveProfile();
+        this.syncUI();
+    },
+
+    exportData() {
+        const payload = {
+            version: "1.2",
+            settings: this.settings,
+            finance: localStorage.getItem('roast_finance_data') ? JSON.parse(localStorage.getItem('roast_finance_data')) : null,
+            quizState: appState.scores
+        };
+        const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = `roast_my_statement_backup_${new Date().toISOString().split('T')[0]}.json`;
+        a.click();
+    },
+
+    importData(e) {
+        const file = e.target.files[0];
+        if(!file) return;
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            try {
+                const data = JSON.parse(event.target.result);
+                if(data.settings) {
+                    this.settings = data.settings;
+                    this.saveProfile();
+                    this.syncUI();
+                }
+                if(data.finance) {
+                    localStorage.setItem('roast_finance_data', JSON.stringify(data.finance));
+                    if(app.finance) app.finance.loadData();
+                }
+                alert("Data successfully imported!");
+            } catch(err) {
+                alert("Failed to parse import file.");
+            }
+        };
+        reader.readAsText(file);
+        e.target.value = '';
+    },
+
+    resetFinanceData() {
+        if(confirm("Are you absolutely sure you want to completely wipe all transactions, budgets, and savings? This cannot be undone.")) {
+            localStorage.removeItem('roast_finance_data');
+            if(app.finance) {
+                app.finance.data = { transactions: [], budgets: {}, savings: [] };
+                app.finance.render();
+            }
+            alert("Financial data wiped.");
+        }
+    },
+
+    resetEverything() {
+        if(confirm("CRITICAL WARNING: This will completely wipe all avatars, display names, and financial data locally on this device. Proceed?")) {
+            localStorage.removeItem('roast_finance_data');
+            localStorage.removeItem('roast_settings');
+            location.reload();
+        }
+    }
+};
+
 const app = {
     views: {},
     
@@ -620,20 +780,22 @@ const app = {
         this.checkChallengeURL(); // Check for viral loop params
         this.bindEvents();
         this.initCursor();
-        this.initObservers();
-        if(this.finance) this.finance.init();
-        if(window.lucide) { window.lucide.createIcons(); }
-    },
+          this.initObservers();
+          if(this.finance) this.finance.init();
+          if(this.settings) this.settings.init();
+          if(window.lucide) { window.lucide.createIcons(); }
+      },
 
     cacheDOM() {
         this.views = {
             home: document.getElementById('view-home'),
             quiz: document.getElementById('view-quiz'),
             analyzing: document.getElementById('view-analyzing'),
-            result: document.getElementById('view-result'),
-            csvResult: document.getElementById('view-csv-result'),
-            finance: document.getElementById('view-finance')
-        };
+              result: document.getElementById('view-result'),
+              csvResult: document.getElementById('view-csv-result'),
+              finance: document.getElementById('view-finance'),
+              settings: document.getElementById('view-settings')
+          };
         this.qContainer = document.getElementById('question-container');
         this.progressBar = document.getElementById('progress-bar');
         this.progressText = document.getElementById('progress-text');
@@ -845,8 +1007,26 @@ const app = {
         document.getElementById('result-desc').textContent = persona.desc;
         document.getElementById('header-main-score').textContent = scoreString;
 
+        // Apply Avatar and Name from Settings
+        const s = this.settings ? this.settings.settings : null;
+        if(s && s.showAvatar) {
+            document.getElementById('card-avatar-box').classList.remove('hidden');
+            document.getElementById('card-avatar-img').src = s.avatar || defaultAvatarSvg;
+        } else {
+            document.getElementById('card-avatar-box').classList.add('hidden');
+        }
+
+        const nameEl = document.getElementById('card-display-name');
+        if(s && s.showName && s.displayName) {
+            nameEl.textContent = s.displayName.toUpperCase();
+            nameEl.classList.remove('hidden');
+        } else {
+            nameEl.textContent = '';
+            nameEl.classList.add('hidden');
+        }
+
         // Populate Card
-        document.getElementById('card-icon').innerHTML = `<i data-lucide="${persona.icon}" style="width:64px; height:64px; color: var(--accent-acid);"></i>`;
+        document.getElementById('card-icon').innerHTML = `<i data-lucide="${persona.icon}" style="width:16px; height:16px;"></i>`;
         document.getElementById('card-title').textContent = persona.name;
         document.getElementById('card-desc').textContent = persona.desc;
         document.getElementById('card-main-score').textContent = scoreString;
@@ -1164,5 +1344,6 @@ const app = {
     }
 };
 
+app.settings = settingsManager;
 app.finance = financeManager;
 app.init();

@@ -10,6 +10,9 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Outfit:wght@500;700;900&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
     
+    <!-- Third Party Styles -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css"/>
+    
     <!-- Styles -->
     <link rel="stylesheet" href="css/style.css">
 </head>
@@ -55,6 +58,7 @@
         <div class="nav-links">
             <a href="#" class="hover-underline" onclick="app.switchView('home')">Quiz</a>
             <a href="#" class="hover-underline" onclick="app.finance.openDashboard()">Dashboard</a>
+            <a href="#" class="hover-underline" onclick="app.settings.openSettings()">Settings</a>
         </div>
     </nav>
 
@@ -178,14 +182,22 @@
                             <div class="card-brand">
                                 <i data-lucide="asterisk" style="width:14px; height:14px; display:inline-block; vertical-align:middle;"></i> ROAST MY STATEMENT
                             </div>
-                            <div class="card-emoji" id="card-icon">
-                                <i data-lucide="skull" style="width:64px; height:64px;"></i>
+                            
+                            <div class="card-identity-block">
+                                <div class="card-avatar-box" id="card-avatar-box">
+                                    <img src="" id="card-avatar-img" class="card-avatar-image" crossorigin="anonymous">
+                                    <div class="card-emoji-stamp" id="card-icon">
+                                        <i data-lucide="skull"></i>
+                                    </div>
+                                </div>
+                                <div class="card-identity-text">
+                                    <div id="card-display-name" class="card-display-name tech-mono text-muted mb-1 hidden"></div>
+                                    <div class="card-score-banner tech-mono highlight-acid mb-2" id="card-main-score">FINANCIAL CHAOS — 87/100</div>
+                                    <h2 id="card-title">THE FINANCIAL MENACE</h2>
+                                    <p id="card-desc" class="mb-4">You don't spend money. You release it into the wild.</p>
+                                </div>
                             </div>
-                            <div class="card-identity">
-                                <div class="card-score-banner tech-mono highlight-acid mb-2" id="card-main-score">FINANCIAL CHAOS — 87/100</div>
-                                <h2 id="card-title">THE FINANCIAL MENACE</h2>
-                                <p id="card-desc" class="mb-4">You don't spend money. You release it into the wild.</p>
-                            </div>
+                            
                             <div class="card-scores" id="card-scores">
                                 <!-- Injected via JS -->
                             </div>
@@ -424,6 +436,79 @@
             </div>
         </section>
 
+        <!-- ==========================================
+             VIEW: SETTINGS
+             ========================================== -->
+        <section id="view-settings" class="view hidden">
+            <div class="result-header fade-in">
+                <span class="tech-label highlight-acid">> SYSTEM CONFIGURATION</span>
+                <h2 class="mt-2 text-center" style="font-size: 2.5rem; letter-spacing: -0.05em;">SETTINGS</h2>
+            </div>
+
+            <div class="settings-layout mt-4 fade-in-delayed" style="max-width: 800px; margin: 0 auto; display: flex; flex-direction: column; gap: 2rem;">
+                
+                <!-- Profile Block -->
+                <div class="glossy-panel p-4">
+                    <h3>PROFILE IDENTITY</h3>
+                    <p class="text-muted text-sm mb-4">Set up a face for your statements. 100% localized handling.</p>
+                    
+                    <div style="display: flex; gap: 2rem; align-items: flex-start; flex-wrap: wrap;">
+                        <div class="avatar-preview-box">
+                            <img id="settings-avatar-preview" src='data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="none" stroke="%238E93A4" stroke-width="4"><rect x="10" y="10" width="80" height="80" rx="10" /><circle cx="50" cy="40" r="15" /><path d="M20 90 Q50 60 80 90" /></svg>' crossorigin="anonymous">
+                        </div>
+                        <div style="flex: 1; min-width: 250px;">
+                            <input type="file" id="avatar-upload-input" accept="image/jpeg, image/png, image/webp" hidden>
+                            <div class="flex-row gap-2 mb-2">
+                                <button class="action-button primary-cta" style="padding: 0.5rem 1rem;" onclick="document.getElementById('avatar-upload-input').click()">UPLOAD PICTURE</button>
+                                <button class="action-button subtle outline" style="padding: 0.5rem 1rem;" onclick="app.settings.removeAvatar()">REMOVE</button>
+                            </div>
+                            
+                            <label class="tech-mono text-muted mb-2 mt-4 display-block">DISPLAY NAME (OPTIONAL)</label>
+                            <input type="text" id="settings-display-name" class="tech-input mb-4" placeholder="e.g. Rahul" maxlength="20" oninput="app.settings.saveProfile()">
+
+                            <label class="checkbox-container">
+                                <input type="checkbox" id="settings-show-avatar" onchange="app.settings.saveProfile()">
+                                <span>Show Avatar on Result Card</span>
+                            </label>
+                            <label class="checkbox-container mt-2">
+                                <input type="checkbox" id="settings-show-name" onchange="app.settings.saveProfile()">
+                                <span>Show Display Name on Result Card</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Privacy & Data -->
+                <div class="glossy-panel p-4">
+                    <h3>DATA & ARCHITECTURE</h3>
+                    <p class="text-muted text-sm mb-4">Manage your localized payload.</p>
+
+                    <div class="flex-row gap-2 mb-4">
+                        <button class="action-button outline" style="padding: 0.5rem 1rem;" onclick="app.settings.exportData()"><i data-lucide="download" style="width:16px;"></i> EXPORT DATA</button>
+                        <button class="action-button outline subtle" style="padding: 0.5rem 1rem;" onclick="document.getElementById('data-import-input').click()"><i data-lucide="upload" style="width:16px;"></i> IMPORT DATA</button>
+                        <input type="file" id="data-import-input" accept=".json" hidden onchange="app.settings.importData(event)">
+                    </div>
+
+                    <div style="border-top: 1px dashed var(--border-light); padding-top: 1.5rem; margin-top: 1rem;">
+                        <h4 class="text-danger mb-2">DANGER ZONE</h4>
+                        <div class="flex-row gap-2">
+                            <button class="action-button outline" style="padding: 0.5rem 1rem; border-color: var(--accent-danger); color: var(--accent-danger);" onclick="app.settings.resetFinanceData()">WIPE FINANCIAL LOGS</button>
+                            <button class="action-button outline" style="padding: 0.5rem 1rem; border-color: red; color: red;" onclick="app.settings.resetEverything()">FACTORY RESET SYTEM</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- About Block -->
+                <div class="glossy-panel p-4 tech-mono text-muted" style="font-size: 0.8rem;">
+                    <strong class="highlight-acid">ROAST MY STATEMENT // V 1.2</strong><br><br>
+                    <p class="mb-2">Local-only behavioral finance application engine.</p>
+                    <p class="mb-2">Icons provided by <a href="https://lucide.dev/" target="_blank" style="color:var(--text-main);">Lucide</a> (ISC License).</p>
+                    <p class="mb-0">Image cropping powered by <a href="https://github.com/fengyuanchen/cropperjs" target="_blank" style="color:var(--text-main);">Cropper.js</a> (MIT License).</p>
+                </div>
+                
+            </div>
+        </section>
+
     </main>
 
     <!-- ==========================================
@@ -599,6 +684,24 @@
         </div>
     </div>
 
+    <!-- CROPPER MODAL -->
+    <div id="cropper-modal" class="modal hidden">
+        <div class="modal-backdrop"></div>
+        <div class="modal-content glossy-panel" style="max-width: 500px; padding: 1.5rem;">
+            <div class="modal-header mb-4">
+                <span class="tech-label highlight-acid">> IDENTITY CALIBRATION</span>
+                <h2 class="mt-2">CONFIGURE AVATAR</h2>
+            </div>
+            <div class="cropper-container" style="width: 100%; max-height: 400px; overflow: hidden; background: #000; border-radius: 8px;">
+                <img id="cropper-image" src="" style="max-width: 100%;">
+            </div>
+            <div class="modal-footer mt-4 flex-row gap-2">
+                <button class="action-button subtle outline w-full" onclick="app.settings.closeCropper()">CANCEL</button>
+                <button class="action-button primary-cta w-full" onclick="app.settings.cropImage()">APPLY</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Footer -->
     <footer class="reveal">
         <div class="footer-content">
@@ -607,6 +710,7 @@
     </footer>
 
     <!-- Scripts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
