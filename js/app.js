@@ -94,32 +94,26 @@ const QUESTIONS = [
 const PERSONALITIES = [
     {
         id: "boss", name: "THE FINANCIAL BOSS", emoji: "👑", desc: "You have terrifyingly good control over your money.",
-        roasts: ["You probably have a spreadsheet for buying groceries, you absolute psycho.", "You have lots of money but no friends to spend it with.", "Your bank account is thriving, but your social life is a barren wasteland."],
         condition: (scores) => scores.saving > 40 && scores.chaos < 30
     },
     {
         id: "foodie", name: "THE FOODIE MENACE", emoji: "🍔", desc: "80% of your income is converted directly into calories.",
-        roasts: ["The delivery driver knows you better than your parents do.", "Your financial portfolio is just a collection of Zomato/Swiggy receipts.", "You spend more on food you could have made at home for 20 rupees."],
         condition: (scores) => scores.food > 30
     },
     {
         id: "goblin", name: "THE DIGITAL GOBLIN", emoji: "🎮", desc: "You buy pixels instead of physical possessions.",
-        roasts: ["You are paying for 4 streaming services you haven't opened in three months.", "Your steam library has more unplayed games than your bank has rupees.", "You probably paid for a premium skin while eating instant noodles."],
         condition: (scores) => scores.digital > 25
     },
     {
         id: "impulse", name: "THE IMPULSE BUYER", emoji: "🛍️", desc: "You see it. You like it. You buy it. You regret it.",
-        roasts: ["Your packages arrive faster than your paycheck.", "You treat 'Add to Cart' like a stress relief button. Grow up.", "Marketers love you because you fall for a '10% off' on a thing you don't need."],
         condition: (scores) => scores.impulse > 40
     },
     {
         id: "menace", name: "THE FINANCIAL MENACE", emoji: "💀", desc: "You don't spend money. You release it into the wild.",
-        roasts: ["Your wallet doesn't have a spending problem. It has a survival problem.", "Your bank statement reads like a cry for help.", "You are exactly one minor inconvenience away from total bankruptcy."],
         condition: (scores) => scores.chaos > 45 || (scores.chaos > 30 && scores.impulse > 30)
     },
     {
         id: "default", name: "THE AVERAGE SURVIVOR", emoji: "😐", desc: "You are financially floating. Neither rich nor broke.",
-        roasts: ["Your financial life is painfully average and profoundly boring.", "You try to save but somehow end up exactly at zero by month end.", "You exist in a constant state of 'I really shouldn't buy this' and then buying it anyway."],
         condition: () => true
     }
 ];
@@ -309,7 +303,9 @@ const app = {
     calculateAndShowResult() {
         let foundPersonality = PERSONALITIES[PERSONALITIES.length - 1];
         for (const p of PERSONALITIES) { if (p.condition(appState.scores)) { foundPersonality = p; break; } }
-        const roast = foundPersonality.roasts[Math.floor(Math.random() * foundPersonality.roasts.length)];
+        
+        // Generate contextual roast from the external ROAST_LIBRARY
+        const roast = window.ROAST_LIBRARY.generateRoast(foundPersonality.id, appState.scores);
         
         const normalized = {
             chaos: Math.min(100, Math.max(5, appState.scores.chaos * 2 + 20)),
