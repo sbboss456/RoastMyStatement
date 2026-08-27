@@ -821,12 +821,6 @@ if (window.Capacitor && window.Capacitor.getPlatform() === 'android') {
         init() {
             if (localStorage.getItem('roast_onboarding_done') === 'true') return false;
             this.isActive = true;
-            
-            // Immediately hide everything to prevent the 1-frame flash
-            const style = document.createElement('style');
-            style.id = 'ob-blocker';
-            style.textContent = '#app-container, .navbar, .android-bottom-nav { display: none !important; }';
-            document.head.appendChild(style);
 
             const buildUI = () => {
                 this.injectUI();
@@ -879,7 +873,7 @@ if (window.Capacitor && window.Capacitor.getPlatform() === 'android') {
                         </div>
                     </div>
                     
-                    <div style="padding: 2rem 2rem calc(env(safe-area-inset-bottom) + 3rem) 2rem; display:flex; flex-direction:column; align-items:center; gap:1.5rem;">
+                    <div style="padding: 2rem 2rem calc(env(safe-area-inset-bottom) + 5rem) 2rem; display:flex; flex-direction:column; align-items:center; gap:1.5rem;">
                         <div class="ob-dots" style="display:flex; gap:0.5rem;">
                             <div class="ob-dot" style="width:8px;height:8px;border-radius:50%;background:var(--accent-acid);"></div>
                             <div class="ob-dot" style="width:8px;height:8px;border-radius:50%;background:var(--border-light);"></div>

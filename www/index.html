@@ -13,6 +13,14 @@
     
     <!-- Styles -->
     <link rel="stylesheet" href="css/style.css">
+
+    <!-- Android Native Pre-loader Engine -->
+    <script id="android-preloader-engine">
+        // Root-level synchronous check guarantees zero frames of flash
+        if (localStorage.getItem('roast_onboarding_done') !== 'true') {
+            document.write('<style id="ob-blocker">#app-container, .navbar, footer, .android-bottom-nav { display: none !important; opacity: 0; }</style>');
+        }
+    </script>
 </head>
 <body class="loading-state">
     
