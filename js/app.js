@@ -920,7 +920,19 @@ if (window.Capacitor && window.Capacitor.getPlatform() === 'android') {
             
             const botNav = document.querySelector('.android-bottom-nav');
             if (botNav) botNav.style.display = 'flex';
+            
+            // ANDROID BUGFIX: Restore '.active' to bypass .reveal opacity lock
+            // caused by removing the class during initial onboarding overlay intercept.
+            const homeView = document.getElementById('view-home');
+            if (homeView) homeView.classList.add('active');
+            
             app.switchView('home');
+            
+            // Force viewport/safe-area recalculation on Android
+            setTimeout(() => {
+                window.scrollTo(0, 0);
+                window.dispatchEvent(new Event('resize'));
+            }, 50);
         },
         handleBack() {
              if (this.slideIndex > 0) {
