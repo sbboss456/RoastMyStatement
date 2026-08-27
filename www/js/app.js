@@ -821,19 +821,23 @@ if (window.Capacitor && window.Capacitor.getPlatform() === 'android') {
         init() {
             if (localStorage.getItem('roast_onboarding_done') === 'true') return false;
             this.isActive = true;
-            document.addEventListener('DOMContentLoaded', () => {
-                setTimeout(() => {
-                    const home = document.getElementById('view-home');
-                    if(home) { home.classList.add('hidden'); home.classList.remove('active'); }
-                    const nav = document.querySelector('.navbar');
-                    if(nav) nav.style.display = 'none';
-                    const botNav = document.querySelector('.android-bottom-nav');
-                    if(botNav) botNav.style.display = 'none';
-                    
-                    this.injectUI();
-                    this.bindEvents();
-                }, 50);
-            });
+            
+            // Immediately hide everything to prevent the 1-frame flash
+            const style = document.createElement('style');
+            style.id = 'ob-blocker';
+            style.textContent = '#app-container, .navbar, .android-bottom-nav { display: none !important; }';
+            document.head.appendChild(style);
+
+            const buildUI = () => {
+                this.injectUI();
+                this.bindEvents();
+            };
+
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', buildUI);
+            } else {
+                buildUI();
+            }
             return true;
         },
         injectUI() {
@@ -845,8 +849,8 @@ if (window.Capacitor && window.Capacitor.getPlatform() === 'android') {
                     
                     <div id="ob-slides" style="flex:1; position:relative; overflow:hidden; display:flex;">
                         <!-- Slide 1 -->
-                        <div class="ob-slide fade-in active" style="position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center;  width:100%;">
-                            <h1 class="huge-title" style=""><span class="highlight-acid skew-text">WHAT KIND OF</span><br>SPENDER ARE YOU?</h1>
+                        <div class="ob-slide fade-in active" style="position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:2rem; width:100%;">
+                            <h1 class="huge-title" style="font-size:2.5rem;"><span class="highlight-acid skew-text">WHAT KIND OF</span><br>SPENDER ARE YOU?</h1>
                             <p class="text-muted mt-4">Discover your financial personality, get your chaos score, and find out exactly how badly we can roast you.</p>
                             <div class="glossy-panel mt-4" style="width:160px; height:200px; display:flex; flex-direction:column; align-items:center; justify-content:center; opacity:0.8; border-radius:12px;">
                                 <i data-lucide="scan-line" style="width:48px;height:48px;color:var(--accent-acid);margin-bottom:1rem;"></i>
@@ -856,8 +860,8 @@ if (window.Capacitor && window.Capacitor.getPlatform() === 'android') {
                         </div>
                         
                         <!-- Slide 2 -->
-                        <div class="ob-slide fade-in hidden" style="position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center;  width:100%;">
-                            <h1 class="huge-title" style="">YOUR MONEY HAS<br><span class="highlight-acid skew-text">A PERSONALITY.</span></h1>
+                        <div class="ob-slide fade-in hidden" style="position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:2rem; width:100%;">
+                            <h1 class="huge-title" style="font-size:2.5rem;">YOUR MONEY HAS<br><span class="highlight-acid skew-text">A PERSONALITY.</span></h1>
                             <p class="text-muted mt-4">Answer a few quick questions and we'll identify your financial personality.</p>
                             <div class="glossy-panel mt-4" style="padding:1.5rem; width:100%; max-width:280px; text-align:left; border-radius:8px;">
                                 <div class="tech-mono highlight-acid mb-2" style="font-size:0.7rem;">FINANCIAL CHAOS — 92/100</div>
@@ -867,15 +871,15 @@ if (window.Capacitor && window.Capacitor.getPlatform() === 'android') {
                         </div>
                         
                         <!-- Slide 3 -->
-                        <div class="ob-slide fade-in hidden" style="position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center;  width:100%;">
-                            <h1 class="huge-title" style="">YOUR DATA<br><span class="highlight-acid skew-text">STAYS YOURS.</span></h1>
+                        <div class="ob-slide fade-in hidden" style="position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:2rem; width:100%;">
+                            <h1 class="huge-title" style="font-size:2.5rem;">YOUR DATA<br><span class="highlight-acid skew-text">STAYS YOURS.</span></h1>
                             <p class="text-muted mt-4 mb-4">Your quiz answers and financial data are processed locally on your device.</p>
                             <div class="status-dot safe" style="width:24px;height:24px; box-shadow:0 0 20px #00ff66; margin:0 auto 1rem;"></div>
                             <div class="tech-mono" style="color:#00ff66;">100% LOCAL PROCESSING</div>
                         </div>
                     </div>
                     
-                    <div style=" display:flex; flex-direction:column; align-items:center; gap:1.5rem;">
+                    <div style="padding: 2rem 2rem calc(env(safe-area-inset-bottom) + 3rem) 2rem; display:flex; flex-direction:column; align-items:center; gap:1.5rem;">
                         <div class="ob-dots" style="display:flex; gap:0.5rem;">
                             <div class="ob-dot" style="width:8px;height:8px;border-radius:50%;background:var(--accent-acid);"></div>
                             <div class="ob-dot" style="width:8px;height:8px;border-radius:50%;background:var(--border-light);"></div>
@@ -917,6 +921,9 @@ if (window.Capacitor && window.Capacitor.getPlatform() === 'android') {
             this.isActive = false;
             
             // Smooth exit transition instead of instant removal
+            const obBlocker = document.getElementById('ob-blocker');
+            if (obBlocker) obBlocker.remove();
+            
             const obView = document.getElementById('view-onboarding');
             if (obView) {
                 obView.style.opacity = '0';
@@ -1056,6 +1063,12 @@ if (window.Capacitor && window.Capacitor.getPlatform() === 'android') {
         }
         
         if (window.lucide) window.lucide.createIcons();
+
+        // Update footer copyright to 2026 strictly on Android
+        const footerSpan = document.querySelector('footer .tech-mono');
+        if (footerSpan) {
+            footerSpan.innerHTML = footerSpan.innerHTML.replace('2024', '2026');
+        }
     });
 }
 
