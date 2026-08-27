@@ -469,3 +469,108 @@ body.android-native-app .stub-barcode {
 /* Prevent background scrolling when modal is open (Modern Browsers/WebViews) */
 body:has(.modal:not(.hidden)) { overflow: hidden; }
 
+
+/* ==========================================================================
+   ANDROID SPECIFIC TYPOGRAPHY & SPACING REFINEMENTS (More Compact)
+   ========================================================================== */
+
+/* Global View & Section Spacing */
+body.android-native-app .view {
+    padding: 1.5rem 0 !important;
+}
+body.android-native-app main {
+    gap: 1.5rem !important;
+}
+
+/* Headings & Subtitles */
+body.android-native-app .huge-title,
+body.android-native-app .hero-title {
+    font-size: clamp(1.8rem, 8vw, 2.6rem) !important;
+    line-height: 1.15 !important;
+}
+
+body.android-native-app .hero-subtitle,
+body.android-native-app .text-muted {
+    font-size: 0.85rem !important;
+    line-height: 1.4 !important;
+}
+
+body.android-native-app .sys-badge {
+    padding: 0.25rem 0.6rem !important;
+    font-size: 0.65rem !important;
+}
+
+/* Quiz Flow */
+body.android-native-app .quiz-progress-container {
+    margin-bottom: 1.25rem !important;
+}
+
+body.android-native-app .question-title {
+    font-size: clamp(1.3rem, 6vw, 1.6rem) !important;
+    margin-bottom: 1.25rem !important;
+    line-height: 1.25 !important;
+}
+
+body.android-native-app .answer-grid {
+    gap: 0.5rem !important;
+}
+
+body.android-native-app .answer-btn {
+    padding: 1rem 1.25rem !important;
+    font-size: 0.9rem !important;
+    border-radius: 6px !important;
+}
+
+/* Result Screen Detailed Spacing & Typography */
+body.android-native-app .result-header {
+    margin-bottom: 1.5rem !important;
+}
+
+body.android-native-app .result-header h2 {
+    font-size: 0.9rem !important;
+    margin-bottom: 0.25rem !important;
+}
+
+body.android-native-app #header-main-score {
+    font-size: 0.9rem !important;
+    margin-top: 0.25rem !important;
+}
+
+body.android-native-app .result-subtitle {
+    font-size: 0.95rem !important;
+}
+
+body.android-native-app .roast-box {
+    padding: 1.25rem !important;
+}
+
+body.android-native-app #roast-text-full {
+    font-size: 0.95rem !important;
+    line-height: 1.4 !important;
+}
+
+/* Buttons */
+body.android-native-app .action-button {
+    padding: 0.75rem 1.25rem !important;
+    font-size: 0.8rem !important;
+}
+
+/* Score Breakdown */
+body.android-native-app .score-breakdown {
+    gap: 0.85rem !important;
+}
+body.android-native-app .full-score-item .score-header {
+    font-size: 0.75rem !important;
+    margin-bottom: 0.25rem !important;
+}
+body.android-native-app .full-score-item .score-track {
+    height: 6px !important;
+}
+
+/* Onboarding specifically */
+body.android-native-app .ob-slide {
+    padding: 1.25rem !important;
+}
+body.android-native-app .ob-slide .huge-title {
+    font-size: clamp(2rem, 8vw, 2.5rem) !important;
+}
