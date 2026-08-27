@@ -915,29 +915,35 @@ if (window.Capacitor && window.Capacitor.getPlatform() === 'android') {
         finish() {
             localStorage.setItem('roast_onboarding_done', 'true');
             this.isActive = false;
+            
+            // Smooth exit transition instead of instant removal
             const obView = document.getElementById('view-onboarding');
-            if (obView) obView.remove();
+            if (obView) {
+                obView.style.opacity = '0';
+                obView.style.transition = 'opacity 0.3s ease';
+                setTimeout(() => obView.remove(), 350);
+            }
             
             const botNav = document.querySelector('.android-bottom-nav');
             if (botNav) botNav.style.display = 'flex';
             
+            app.scrollState = app.scrollState || {};
+            app.scrollState['view-home'] = 0; // Force home top
             app.switchView('home');
 
-            // Fix Android specific First-Load missing content rendering bug
-            window.scrollTo(0, 0);
-            requestAnimationFrame(() => {
+            // Force reflow safely
+            setTimeout(() => {
+                window.scrollTo(0, 0);
                 const home = document.getElementById('view-home');
-                if (home) home.classList.add('active'); // Restore CSS reveal animation block
+                if (home) {
+                    home.classList.add('active'); 
+                }
                 
-                // Re-evaluate visibility layout bounds for all child elements once display:none is lifted
                 document.querySelectorAll('.reveal').forEach(el => {
-                    if (el.getBoundingClientRect().top < window.innerHeight) {
-                        el.classList.add('active');
-                    }
+                    if (el.getBoundingClientRect().top < window.innerHeight + 100) el.classList.add('active');
                 });
-                // Force WebView viewport recalculation safely
                 window.dispatchEvent(new Event('resize'));
-            });
+            }, 50);
         },
         handleBack() {
              if (this.slideIndex > 0) {
@@ -973,9 +979,37 @@ if (window.Capacitor && window.Capacitor.getPlatform() === 'android') {
         document.body.appendChild(bottomNav);
 
         // Map View Switches to update the bottom nav active state
-        const originalSwitchView = app.switchView;
+        app.scrollState = app.scrollState || {};
         app.switchView = function(viewName) {
-            originalSwitchView.call(app, viewName);
+            // Save scroll state before hiding
+            const currentView = document.querySelector('.view:not(.hidden)');
+            if (currentView) {
+                app.scrollState[currentView.id] = window.scrollY;
+            }
+            
+            // Execute view switch natively
+            Object.values(app.views).forEach(v => v.classList.add('hidden'));
+            app.views[viewName].classList.remove('hidden');
+
+            // Find new scroll
+            const newId = app.views[viewName].id;
+            const targetScroll = app.scrollState[newId] || 0;
+            
+            // Delay rendering frames to flush stale DOM states and flash issues
+            requestAnimationFrame(() => {
+                requestAnimationFrame(() => {
+                    window.scrollTo(0, targetScroll);
+                    // Revalidate animations dynamically
+                    document.querySelectorAll('.reveal').forEach(el => {
+                        if (el.getBoundingClientRect().top < window.innerHeight) {
+                            el.classList.add('active');
+                        }
+                    });
+                    window.dispatchEvent(new Event('resize'));
+                });
+            });
+
+            // Update Nav Tabs safely
             document.querySelectorAll('.android-bottom-nav .nav-tab').forEach(btn => btn.classList.remove('active'));
             let targetTab = 'home';
             if (viewName === 'finance') targetTab = 'finance';
