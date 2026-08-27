@@ -921,18 +921,23 @@ if (window.Capacitor && window.Capacitor.getPlatform() === 'android') {
             const botNav = document.querySelector('.android-bottom-nav');
             if (botNav) botNav.style.display = 'flex';
             
-            // ANDROID BUGFIX: Restore '.active' to bypass .reveal opacity lock
-            // caused by removing the class during initial onboarding overlay intercept.
-            const homeView = document.getElementById('view-home');
-            if (homeView) homeView.classList.add('active');
-            
             app.switchView('home');
-            
-            // Force viewport/safe-area recalculation on Android
-            setTimeout(() => {
-                window.scrollTo(0, 0);
+
+            // Fix Android specific First-Load missing content rendering bug
+            window.scrollTo(0, 0);
+            requestAnimationFrame(() => {
+                const home = document.getElementById('view-home');
+                if (home) home.classList.add('active'); // Restore CSS reveal animation block
+                
+                // Re-evaluate visibility layout bounds for all child elements once display:none is lifted
+                document.querySelectorAll('.reveal').forEach(el => {
+                    if (el.getBoundingClientRect().top < window.innerHeight) {
+                        el.classList.add('active');
+                    }
+                });
+                // Force WebView viewport recalculation safely
                 window.dispatchEvent(new Event('resize'));
-            }, 50);
+            });
         },
         handleBack() {
              if (this.slideIndex > 0) {
