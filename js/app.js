@@ -907,7 +907,7 @@ if (window.Capacitor && window.Capacitor.getPlatform() === 'android') {
             slides[this.slideIndex].classList.add('active');
             dots[this.slideIndex].style.background = 'var(--accent-acid)';
             
-            btnSpan.textContent = this.slideIndex === 2 ? 'GET STARTED' : 'NEXT';
+            if(btnSpan) btnSpan.textContent = this.slideIndex === 2 ? 'GET STARTED' : 'NEXT';
         },
         bindEvents() {
             document.getElementById('btn-ob-main').onclick = () => {
@@ -1163,8 +1163,8 @@ const app = {
                 heroTitle.innerHTML = `YOU'VE BEEN <br><span class="highlight-acid skew-text">CHALLENGED.</span>`;
             }
             
-            heroSub.textContent = "Prove them wrong. Discover your Financial Personality.";
-            btnSpan.textContent = "ACCEPT THE CHALLENGE →";
+            if(heroSub) heroSub.textContent = "Prove them wrong. Discover your Financial Personality.";
+            if(btnSpan) btnSpan.textContent = "ACCEPT THE CHALLENGE →";
         }
     },
 
@@ -1573,12 +1573,12 @@ const app = {
         if (appState.shareImageBlob && navigator.canShare) {
             const file = new File([appState.shareImageBlob], 'roast-my-statement.png', { type: 'image/png' });
             if (!navigator.canShare({ files: [file] })) {
-                btn.textContent = "DOWNLOAD IMAGE";
+                if(btn) btn.textContent = "DOWNLOAD IMAGE";
             } else {
-                btn.textContent = "SHARE MY PERSONALITY";
+                if(btn) btn.textContent = "SHARE MY PERSONALITY";
             }
         } else {
-            btn.textContent = "DOWNLOAD IMAGE";
+            if(btn) btn.textContent = "DOWNLOAD IMAGE";
         }
     },
 
@@ -1615,15 +1615,15 @@ const app = {
         appState.isChallenged = false; appState.challengerName = null;
         
         document.getElementById('hero-title-text').innerHTML = `WHAT KIND OF <br><span class="highlight-acid skew-text">SPENDER ARE YOU?</span>`;
-        document.getElementById('hero-subtitle-text').textContent = "Answer a few questions. Discover your financial personality. Get roasted abruptly and brutally. (100% Local)";
-        document.getElementById('btn-start-span').textContent = "DISCOVER MY PERSONALITY";
+        if(document.getElementById('hero-subtitle-text')) document.getElementById('hero-subtitle-text').textContent = "Answer a few questions. Discover your financial personality. Get roasted abruptly and brutally. (100% Local)";
+        if(document.getElementById('btn-start-span')) document.getElementById('btn-start-span').textContent = "DISCOVER MY PERSONALITY";
         document.getElementById('legacy-uploader').classList.add('hidden');
         document.getElementById('challenge-accepted-msg').classList.add('hidden');
         document.getElementById('normal-diagnosis-msg').classList.remove('hidden');
         document.getElementById('main-ticker').classList.remove('alert-mode');
         
         // Reset CSV UI
-        this.csvErrorMsg.textContent = "";
+        if(this.csvErrorMsg) this.csvErrorMsg.textContent = "";
         this.csvUploaderUI.classList.remove('hidden');
         this.csvSuccessUI.classList.add('hidden');
         this.csvInput.value = "";
@@ -1636,15 +1636,15 @@ const app = {
         if (!files || files.length === 0) return;
         const file = files[0];
         
-        this.csvErrorMsg.textContent = "";
+        if(this.csvErrorMsg) this.csvErrorMsg.textContent = "";
 
         if (file.type !== 'text/csv' && !file.name.toLowerCase().endsWith('.csv')) {
-            this.csvErrorMsg.textContent = "Error: Please upload a valid .csv file.";
+            if(this.csvErrorMsg) this.csvErrorMsg.textContent = "Error: Please upload a valid .csv file.";
             return;
         }
 
         // Show Success UI
-        this.csvFileName.textContent = file.name;
+        if(this.csvFileName) this.csvFileName.textContent = file.name;
         this.csvUploaderUI.classList.add('hidden');
         this.csvSuccessUI.classList.remove('hidden');
         this.csvDropZone.style.cursor = 'default';
@@ -1795,8 +1795,8 @@ const app = {
         } else {
             navigator.clipboard.writeText(shareText).then(() => {
                 const btnSpan = document.getElementById('copy-btn-text');
-                btnSpan.textContent = "COPIED ✓";
-                setTimeout(() => { btnSpan.textContent = "COPY CHALLENGE LINK"; this.closeChallengeModal(); }, 1500);
+                if(btnSpan) btnSpan.textContent = "COPIED ✓";
+                setTimeout(() => { if(btnSpan) btnSpan.textContent = "COPY CHALLENGE LINK"; this.closeChallengeModal(); }, 1500);
             }).catch(() => alert('Failed to copy.'));
         }
     }
