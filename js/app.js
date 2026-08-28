@@ -123,9 +123,12 @@ const PERSONALITIES = [
 // ==========================================
 const appState = {
     currentQuestion: 0,
+    activeQuizQuestions: [],
     isChallenged: false,
     challengerName: null,
-    scores: { saving: 0, chaos: 0, impulse: 0, food: 0, digital: 0 },
+    scores: { saving: 0, chaos: 0, impulse: 0, food: 0, digital: 0, discipline: 0, risk: 0, lifestyle: 0, confidence: 0, future: 0 },
+    maxAbsPossible: { saving: 0, chaos: 0, impulse: 0, food: 0, digital: 0, discipline: 0, risk: 0, lifestyle: 0, confidence: 0, future: 0 },
+    minAbsPossible: { saving: 0, chaos: 0, impulse: 0, food: 0, digital: 0, discipline: 0, risk: 0, lifestyle: 0, confidence: 0, future: 0 },
     shareImageBlob: null
 };
 
@@ -1209,17 +1212,72 @@ const app = {
 
     // --- QUIZ FLOW ---
     startQuiz() {
+        // Reset state
         appState.currentQuestion = 0;
-        appState.scores = { saving: 0, chaos: 0, impulse: 0, food: 0, digital: 0 };
+        appState.scores = Object.keys(appState.scores).reduce((acc, k) => ({...acc, [k]: 0}), {});
+        appState.maxAbsPossible = Object.keys(appState.maxAbsPossible).reduce((acc, k) => ({...acc, [k]: 0}), {});
+        appState.minAbsPossible = Object.keys(appState.minAbsPossible).reduce((acc, k) => ({...acc, [k]: 0}), {});
+        
+        // Select exactly 15 unique questions from the bank
+        this.selectDynamicQuestions();
+        
         this.switchView('quiz');
         this.renderQuestion();
     },
 
+    selectDynamicQuestions() {
+        const fullBank = window.QUESTION_BANK || [];
+        if (fullBank.length === 0) return;
+
+        let seen = [];
+        try { seen = JSON.parse(localStorage.getItem('roast_seen_qs')) || []; } catch(e){}
+
+        // Filter unseen, fallback to full bank if running low
+        let available = fullBank.filter(q => !seen.includes(q.id));
+        if (available.length < 15) {
+            seen = []; 
+            available = [...fullBank]; 
+        }
+
+        // Shuffle
+        available = available.sort(() => 0.5 - Math.random());
+        appState.activeQuizQuestions = available.slice(0, 15);
+
+        // Pre-calculate theoretical limits for normalization mapping
+        appState.activeQuizQuestions.forEach(q => {
+            let traitMax = {};
+            let traitMin = {};
+            q.options.forEach(opt => {
+                if(!opt.impact) return;
+                for (const [trait, val] of Object.entries(opt.impact)) {
+                    if (traitMax[trait] === undefined) traitMax[trait] = -999;
+                    if (traitMin[trait] === undefined) traitMin[trait] = 999;
+                    if (val > traitMax[trait]) traitMax[trait] = val;
+                    if (val < traitMin[trait]) traitMin[trait] = val;
+                }
+            });
+            for (const [trait, val] of Object.entries(traitMax)) {
+                if(appState.maxAbsPossible[trait] !== undefined) appState.maxAbsPossible[trait] += val;
+                if(appState.minAbsPossible[trait] !== undefined) appState.minAbsPossible[trait] += traitMin[trait];
+            }
+        });
+    },
+
     renderQuestion() {
-        if (appState.currentQuestion >= QUESTIONS.length) return this.finishQuiz();
-        const q = QUESTIONS[appState.currentQuestion];
-        this.progressBar.style.width = `${((appState.currentQuestion) / QUESTIONS.length) * 100}%`;
-        this.progressText.textContent = `0${appState.currentQuestion + 1} / 0${QUESTIONS.length}`;
+        const qIndex = appState.currentQuestion;
+        const activeQs = appState.activeQuizQuestions;
+        if (qIndex >= activeQs.length) {
+            this.finishQuiz();
+            return;
+        }
+
+        const q = activeQs[qIndex];
+        
+        const pPercent = ((qIndex) / activeQs.length) * 100;
+        this.progressBar.style.width = `${pPercent}%`;
+        const qNumStr = (qIndex + 1).toString().padStart(2, '0');
+        const qTotalStr = activeQs.length.toString().padStart(2, '0');
+        this.progressText.textContent = `${qNumStr} / ${qTotalStr}`;
 
         let html = `<div class="question-card" id="q-card"><h2 class="question-title">${q.text}</h2><div class="answer-grid">`;
         q.options.forEach((opt, i) => {
@@ -1231,10 +1289,17 @@ const app = {
     },
 
     handleAnswer(optIndex) {
-        const option = QUESTIONS[appState.currentQuestion].options[optIndex];
-        for (const [trait, value] of Object.entries(option.impact)) {
-            appState.scores[trait] += value;
+        const q = appState.activeQuizQuestions[appState.currentQuestion];
+        const option = q.options[optIndex];
+        
+        if (option.impact) {
+            for (const [trait, value] of Object.entries(option.impact)) {
+                if(appState.scores[trait] !== undefined) {
+                    appState.scores[trait] += value;
+                }
+            }
         }
+
         const card = document.getElementById('q-card');
         card.style.opacity = '0'; card.style.transform = 'translateY(-20px)'; card.style.transition = 'all 0.2s';
         setTimeout(() => { appState.currentQuestion++; this.renderQuestion(); }, 200);
@@ -1242,6 +1307,14 @@ const app = {
 
     finishQuiz() {
         this.progressBar.style.width = `100%`;
+        
+        // Save seen IDs
+        try {
+            let seen = JSON.parse(localStorage.getItem('roast_seen_qs')) || [];
+            seen.push(...appState.activeQuizQuestions.map(q => q.id));
+            localStorage.setItem('roast_seen_qs', JSON.stringify([...new Set(seen)]));
+        } catch(e) {}
+
         setTimeout(() => { this.switchView('analyzing'); this.runTerminalAnimation(); }, 300);
     },
 
@@ -1260,40 +1333,58 @@ const app = {
             }
         }, 400);
     },
-
     calculateAndShowResult() {
-        let foundPersonality = PERSONALITIES[PERSONALITIES.length - 1];
-        for (const p of PERSONALITIES) { if (p.condition(appState.scores)) { foundPersonality = p; break; } }
-        
-        // Generate contextual roast from the external ROAST_LIBRARY
-        const roast = window.ROAST_LIBRARY.generateRoast(foundPersonality.id, appState.scores);
-        
-        const normalized = {
-            chaos: Math.min(100, Math.max(5, appState.scores.chaos * 2 + 20)),
-            impulse: Math.min(100, Math.max(5, appState.scores.impulse * 2 + 20)),
-            saving: Math.min(100, Math.max(5, appState.scores.saving * 2 + 10)),
-            digital: Math.min(100, Math.max(5, appState.scores.digital * 2.5)),
-            food: Math.min(100, Math.max(5, appState.scores.food * 2.5))
+        const scores = appState.scores;
+        const normalized = {};
+        for(let t in appState.maxAbsPossible) {
+            let s = scores[t] || 0; let mx = appState.maxAbsPossible[t]; let mn = appState.minAbsPossible[t];
+            if (mx === mn) { normalized[t] = 50; } else {
+                normalized[t] = Math.max(0, Math.min(100, Math.round(((s - mn) / (mx - mn)) * 100)));
+            }
+        }
+
+        let wScore = 100; let wTrait = 'default';
+        let sScore = 0; let sTrait = 'default';
+
+        const evalTrait = (t, isGoodIfHigh) => {
+            if (normalized[t] === undefined) return;
+            const valGood = isGoodIfHigh ? normalized[t] : (100 - normalized[t]);
+            if (valGood < wScore || wTrait === 'default') { wScore = valGood; wTrait = t; }
+            if (valGood > sScore || sTrait === 'default') { sScore = valGood; sTrait = t; }
         };
 
-        this.renderResultUI(foundPersonality, roast, normalized);
+        ['saving', 'discipline', 'future', 'confidence'].forEach(t => evalTrait(t, true));
+        ['chaos', 'impulse', 'risk', 'lifestyle', 'food', 'digital', 'shopping'].forEach(t => evalTrait(t, false));
+
+        let foundPersonality = PERSONALITIES[PERSONALITIES.length - 1];
+        for (const p of PERSONALITIES) { if (p.condition(normalized)) { foundPersonality = p; break; } }
+        
+        let roasts = [];
+        if(window.ROAST_LIBRARY && window.ROAST_LIBRARY.generateMultiRoast) {
+             roasts = window.ROAST_LIBRARY.generateMultiRoast(foundPersonality.id, sTrait, wTrait);
+        } else {
+             roasts = [foundPersonality.desc, "You are fundamentally reckless with capital.", "Your financial priorities require a hard reboot."];
+        }
+
+        const traitDisplayMap = { chaos: "Pure Chaos", impulse: "Impulse Control", saving: "Savings Focus", discipline: "Total Discipline", risk: "Risk Appetite", lifestyle: "Lifestyle Needs", future: "Future Planning", confidence: "Money Logic", food: "Food Dependencies", digital: "Digital Hoarding", shopping: "Consumer Traps", default: "Average Hustle", social: "Peer Pressures", travel: "Wanderlust Spend", debt: "Debt Cycle", emergency: "Panic Modes" };
+        const stStr = traitDisplayMap[sTrait] || sTrait;
+        const wStr = traitDisplayMap[wTrait] || wTrait;
+
+        this.renderResultUI(foundPersonality, roasts, normalized, stStr, wStr);
         this.switchView('result');
     },
 
-    renderResultUI(persona, roast, scores) {
+    renderResultUI(persona, roasts, scores, strengthStr, weaknessStr) {
         if (appState.isChallenged) {
             document.getElementById('challenge-accepted-msg').classList.remove('hidden');
             document.getElementById('normal-diagnosis-msg').classList.add('hidden');
         }
 
-        // Reset image/html visibility states for re-renders
         const existingImg = document.getElementById('generated-share-img');
         if (existingImg) existingImg.remove();
         document.getElementById('share-card-element').style.display = 'flex';
 
-        // Calculate a main aggregated Financial Score (e.g., Chaos + Impulse - Saving)
-        // Scaled to 0-100 logically
-        let mainScore = Math.round((scores.chaos * 1.2 + scores.impulse * 0.8 + (100 - scores.saving)) / 3);
+        let mainScore = Math.round(((scores.chaos||50) * 1.2 + (scores.impulse||50) * 0.8 + (100 - (scores.saving||50))) / 3) || scores.chaos || 50;
         mainScore = Math.min(100, Math.max(0, mainScore));
         const scoreString = `FINANCIAL CHAOS — ${mainScore}/100`;
 
@@ -1301,7 +1392,6 @@ const app = {
         document.getElementById('result-desc').textContent = persona.desc;
         document.getElementById('header-main-score').textContent = scoreString;
 
-        // Apply Avatar and Name from Settings
         const s = this.settings ? this.settings.settings : null;
         if(s && s.showAvatar) {
             document.getElementById('card-avatar-box').classList.remove('hidden');
@@ -1319,18 +1409,25 @@ const app = {
             nameEl.classList.add('hidden');
         }
 
-        // Populate Card
-        document.getElementById('card-icon').innerHTML = `<i data-lucide="${persona.icon}" style="width:16px; height:16px;"></i>`;
+        document.getElementById('card-icon').innerHTML = `<i data-lucide="${persona.icon}"></i>`;
         document.getElementById('card-title').textContent = persona.name;
         document.getElementById('card-desc').textContent = persona.desc;
         document.getElementById('card-main-score').textContent = scoreString;
-        document.getElementById('card-roast-text').textContent = `"${roast}"`;
-        document.getElementById('roast-text-full').textContent = `"${roast}"`;
+
+        const rcCard = document.getElementById('card-roast-text');
+        if(rcCard) rcCard.innerHTML = `<ul style="margin:0; padding-left:1.25rem; font-size:0.65rem; line-height:1.2;"><li>"${roasts[0]}"</li><li>"${roasts[1]}"</li><li>"${roasts[2]}"</li></ul>`;
+        
+        const rcFull = document.getElementById('roast-text-full');
+        if(rcFull) rcFull.innerHTML = `<p>"${roasts[0]}"</p><p class="mt-2 text-muted">"${roasts[1]}"</p><p class="mt-2 text-muted">"${roasts[2]}"</p>`;
+
+        if (document.getElementById('card-strength')) document.getElementById('card-strength').textContent = strengthStr;
+        if (document.getElementById('card-weakness')) document.getElementById('card-weakness').textContent = weaknessStr;
         
         const top3Scores = [
-            { label: 'CHAOS', val: scores.chaos }, { label: 'IMPULSE', val: scores.impulse }, { label: 'SAVING', val: scores.saving }
+            { label: 'CHAOS', val: scores.chaos || 0 }, 
+            { label: 'IMPULSE', val: scores.impulse || 0 }, 
+            { label: 'SAVING', val: scores.saving || 0 }
         ];
-        
         let cardScoresHTML = '';
         top3Scores.forEach(s => {
             cardScoresHTML += `<div class="score-line"><span class="score-name">${s.label}</span><div class="score-value-bar"><div class="score-inner" style="width: ${Math.max(10, s.val)}%;"></div></div></div>`;
@@ -1338,17 +1435,16 @@ const app = {
         document.getElementById('card-scores').innerHTML = cardScoresHTML;
 
         const allScoresList = [
-            { label: 'FINANCIAL CHAOS', val: scores.chaos }, { label: 'IMPULSE CONTROL', val: 100 - scores.impulse },
-            { label: 'SAVING ABILITY', val: scores.saving }, { label: 'FOOD DEPENDENCY', val: scores.food }, { label: 'DIGITAL HOARDING', val: scores.digital }
+            { label: 'FINANCIAL CHAOS', val: scores.chaos || 0 }, { label: 'IMPULSE TENDENCY', val: scores.impulse || 0 },
+            { label: 'SAVING ABILITY', val: scores.saving || 0 }, { label: 'FINANCIAL DISCIPLINE', val: scores.discipline || 0 },
+            { label: 'RISK TOLERANCE', val: scores.risk || 0 }, { label: 'FUTURE FOCUS', val: scores.future || 0 }
         ];
-        
         let breakdownHTML = '';
         allScoresList.forEach(s => {
             breakdownHTML += `<div class="full-score-item"><div class="score-header"><span>${s.label}</span><span>${Math.round(s.val)} / 100</span></div><div class="score-track"><div class="score-fill" style="width: 0%;" data-target="${s.val}"></div></div></div>`;
         });
         document.getElementById('score-breakdown').innerHTML = breakdownHTML;
         
-        // Render lucide icons
         if(window.lucide) { window.lucide.createIcons(); }
 
         setTimeout(() => document.querySelectorAll('.score-fill').forEach(el => el.style.width = el.dataset.target + '%'), 500);

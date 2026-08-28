@@ -575,3 +575,9 @@ body.android-native-app .ob-slide .huge-title {
     font-size: clamp(2rem, 8vw, 2.5rem) !important;
 }
 \n/* ANDROID QA FIXES */\nbody.android-native-app { overflow-x: hidden !important; width: 100vw !important; }\nbody.android-native-app .ticker-wrap { max-width: 100vw !important; overflow: hidden !important; box-sizing: border-box !important; }\nbody.android-native-app #view-settings { padding-top: max(env(safe-area-inset-top), 2rem) !important; }\n@keyframes modalFadeIn { from { opacity: 0; } to { opacity: 1; } }\nbody.android-native-app .modal:not(.hidden) { animation: modalFadeIn 0.2s ease-out; }\n
+.card-roast-list ul { margin: 0; padding-left: 1rem; font-size: 0.75rem; line-height: 1.3; font-style: italic; }
+.card-roast-list li { margin-bottom: 0.25rem; }
+body.android-native-app .card-roast-list ul { font-size: 0.7rem; line-height: 1.25; }
+body.android-native-app .card-identity-text p.mb-4 { margin-bottom: 0 !important; }
+body.android-native-app .card-traits { margin-bottom: 0.25rem !important; }
+

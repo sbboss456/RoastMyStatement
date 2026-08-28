@@ -199,17 +199,23 @@
                                 <div class="card-identity-text">
                                     <div id="card-display-name" class="card-display-name tech-mono text-muted mb-1 hidden"></div>
                                     <div class="card-score-banner tech-mono highlight-acid mb-2" id="card-main-score">FINANCIAL CHAOS — 87/100</div>
-                                    <h2 id="card-title">THE FINANCIAL MENACE</h2>
-                                    <p id="card-desc" class="mb-4">You don't spend money. You release it into the wild.</p>
+                                    <h2 id="card-title" class="mb-2">THE FINANCIAL MENACE</h2>
+                                    <div class="card-traits tech-mono text-muted mb-4" style="font-size:0.55rem; display:flex; gap:0.5rem; flex-wrap:wrap; line-height:1.2;">
+                                        <div><span style="opacity:0.6">STRENGTH:</span> <strong style="color:#00ff66;" id="card-strength">Saving</strong></div>
+                                        <div><span style="opacity:0.6">WEAKNESS:</span> <strong style="color:var(--accent-danger);" id="card-weakness">Impulse</strong></div>
+                                    </div>
                                 </div>
                             </div>
                             
                             <div class="card-scores" id="card-scores">
                                 <!-- Injected via JS -->
                             </div>
+                            
                             <div class="card-roast">
-                                <span class="tech-mono acid-text">>> FATAL ERROR:</span>
-                                <p id="card-roast-text">"Your wallet doesn't have a spending problem. It has a survival problem."</p>
+                                <span class="tech-mono acid-text">> SYSTEM DIAGNOSIS:</span>
+                                <div id="card-roast-text" class="card-roast-list">
+                                    <!-- List injected via JS -->
+                                </div>
                             </div>
                         </div>
 
@@ -720,6 +726,7 @@
     <script src="js/lib/lucide.min.js"></script>
     <script src="js/lib/html2canvas.min.js"></script>
     <script src="js/lib/papaparse.min.js"></script>
+    <script src="js/questions.js"></script>
     <script src="js/roasts.js"></script>
     <script src="js/app.js"></script>
 </body>
