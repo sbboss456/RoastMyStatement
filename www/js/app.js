@@ -263,7 +263,7 @@ const financeManager = {
     openImportModal() {
         this.closeModals();
         document.getElementById('finance-csv-input').value = "";
-        document.getElementById('finance-csv-msg').textContent = "";
+        if(document.getElementById('finance-csv-msg')) document.getElementById('finance-csv-msg').textContent = "";
         document.getElementById('finance-import-modal').classList.remove('hidden');
     },
 
@@ -346,12 +346,12 @@ const financeManager = {
     handleImportCSV(files) {
         if(!files || files.length === 0) return;
         const msg = document.getElementById('finance-csv-msg');
-        msg.textContent = "Parsing CSV...";
+        if(msg) msg.textContent = "Parsing CSV...";
         
         Papa.parse(files[0], {
             header: false, skipEmptyLines: true,
             complete: (results) => this.processImportData(results.data),
-            error: (err) => { msg.textContent = "Error: " + err.message; }
+            error: (err) => { if(msg) msg.textContent = "Error: " + err.message; }
         });
     },
 
@@ -371,7 +371,7 @@ const financeManager = {
         }
 
         if(headerIdx === -1 || maxScore < 2) {
-            msg.textContent = "Could not map columns. Required: Date, Description, Amount."; return;
+            if(msg) msg.textContent = "Could not map columns. Required: Date, Description, Amount."; return;
         }
 
         let imported = 0;
@@ -437,7 +437,7 @@ const financeManager = {
             this.render();
             alert(`Successfully imported ${imported} transactions!`);
         } else {
-            msg.textContent = "No valid transactions found.";
+            if(msg) msg.textContent = "No valid transactions found.";
         }
     },
 
@@ -446,7 +446,7 @@ const financeManager = {
         const monthNames = ["JANUARY", "FEBRUARY", "MARCH", "APRIL", "MAY", "JUNE", "JULY", "AUGUST", "SEPTEMBER", "OCTOBER", "NOVEMBER", "DECEMBER"];
         const curM = this.currentDate.getMonth();
         const curY = this.currentDate.getFullYear();
-        document.getElementById('finance-month-display').textContent = `${monthNames[curM]} ${curY}`;
+        if(document.getElementById('finance-month-display')) document.getElementById('finance-month-display').textContent = `${monthNames[curM]} ${curY}`;
 
         // Empty state check
         if (this.data.transactions.length === 0 && this.data.savings.length === 0 && Object.keys(this.data.budgets).length === 0) {
@@ -473,12 +473,12 @@ const financeManager = {
             }
         });
 
-        document.getElementById('kpi-income').textContent = this.formatCurrency(tInc);
-        document.getElementById('kpi-spent').textContent = this.formatCurrency(tExp);
-        document.getElementById('kpi-remaining').textContent = this.formatCurrency(tInc - tExp);
+        if(document.getElementById('kpi-income')) document.getElementById('kpi-income').textContent = this.formatCurrency(tInc);
+        if(document.getElementById('kpi-spent')) document.getElementById('kpi-spent').textContent = this.formatCurrency(tExp);
+        if(document.getElementById('kpi-remaining')) document.getElementById('kpi-remaining').textContent = this.formatCurrency(tInc - tExp);
         
         let sRate = tInc > 0 ? Math.max(0, Math.round(((tInc - tExp) / tInc) * 100)) : 0;
-        document.getElementById('kpi-rate').textContent = sRate + '%';
+        if(document.getElementById('kpi-rate')) document.getElementById('kpi-rate').textContent = sRate + '%';
 
         // Render List
         const listC = document.getElementById('txn-list-container');
@@ -574,7 +574,7 @@ const financeManager = {
         const insC = document.getElementById('finance-insights-content');
         if (monthTxns.length === 0) {
             insC.innerHTML = '<p class="text-muted">Add transactions to generate insights.</p>';
-            document.getElementById('live-chaos-score').textContent = '0 / 100';
+            if(document.getElementById('live-chaos-score')) document.getElementById('live-chaos-score').textContent = '0 / 100';
         } else {
             // Find biggest drain
             let topCat = null, topAmt = 0;
@@ -607,7 +607,7 @@ const financeManager = {
             chaos = Math.min(100, Math.max(0, Math.round(chaos)));
             
             const liveC = document.getElementById('live-chaos-score');
-            liveC.textContent = `${chaos} / 100`;
+            if(liveC) liveC.textContent = `${chaos} / 100`;
             liveC.style.color = chaos > 70 ? 'var(--accent-danger)' : (chaos > 40 ? 'var(--accent-acid)' : '#00ff66');
         }
 
@@ -1037,8 +1037,8 @@ if (window.Capacitor && window.Capacitor.getPlatform() === 'android') {
                     reader.onloadend = () => {
                         window.AndroidNativeBridge.saveImageToGallery(reader.result);
                         const span = saveBtn.querySelector('span');
-                        span.textContent = 'IMAGE SAVED ✓';
-                        setTimeout(() => span.textContent = 'SAVE IMAGE', 2000);
+                        if(span) span.textContent = 'IMAGE SAVED ✓';
+                        setTimeout(() => { if(span) span.textContent = 'SAVE IMAGE' }, 2000);
                     };
                     reader.readAsDataURL(appState.shareImageBlob);
                 } else {
@@ -1280,7 +1280,7 @@ const app = {
         this.progressBar.style.width = `${pPercent}%`;
         const qNumStr = (qIndex + 1).toString().padStart(2, '0');
         const qTotalStr = activeQs.length.toString().padStart(2, '0');
-        this.progressText.textContent = `${qNumStr} / ${qTotalStr}`;
+        if(this.progressText) this.progressText.textContent = `${qNumStr} / ${qTotalStr}`;
 
         let html = `<div class="question-card" id="q-card"><h2 class="question-title">${q.text}</h2><div class="answer-grid">`;
         q.options.forEach((opt, i) => {
@@ -1456,9 +1456,9 @@ const app = {
         mainScore = Math.min(100, Math.max(0, mainScore));
         const scoreString = `FINANCIAL CHAOS — ${mainScore}/100`;
 
-        document.getElementById('result-title').textContent = persona.name;
-        document.getElementById('result-desc').textContent = persona.desc;
-        document.getElementById('header-main-score').textContent = scoreString;
+        if(document.getElementById('result-title')) document.getElementById('result-title').textContent = persona.name;
+        if(document.getElementById('result-desc')) document.getElementById('result-desc').textContent = persona.desc;
+        if(document.getElementById('header-main-score')) document.getElementById('header-main-score').textContent = scoreString;
 
         const s = this.settings ? this.settings.settings : null;
         if(s && s.showAvatar) {
@@ -1470,17 +1470,17 @@ const app = {
 
         const nameEl = document.getElementById('card-display-name');
         if(s && s.showName && s.displayName) {
-            nameEl.textContent = s.displayName.toUpperCase();
+            if(nameEl) nameEl.textContent = s.displayName.toUpperCase();
             nameEl.classList.remove('hidden');
         } else {
-            nameEl.textContent = '';
+            if(nameEl) nameEl.textContent = '';
             nameEl.classList.add('hidden');
         }
 
         document.getElementById('card-icon').innerHTML = `<i data-lucide="${persona.icon}"></i>`;
-        document.getElementById('card-title').textContent = persona.name;
-        document.getElementById('card-desc').textContent = persona.desc;
-        document.getElementById('card-main-score').textContent = scoreString;
+        if(document.getElementById('card-title')) document.getElementById('card-title').textContent = persona.name;
+        if(document.getElementById('card-desc')) document.getElementById('card-desc').textContent = persona.desc;
+        if(document.getElementById('card-main-score')) document.getElementById('card-main-score').textContent = scoreString;
 
         const rcCard = document.getElementById('card-roast-text');
         if(rcCard) rcCard.innerHTML = `<ul style="margin:0; padding-left:1.25rem; font-size:0.65rem; line-height:1.2;"><li>"${roasts[0]}"</li><li>"${roasts[1]}"</li><li>"${roasts[2]}"</li></ul>`;
@@ -1653,7 +1653,7 @@ const app = {
         // Typewriter effect
         const msg = this.csvSysMsg;
         const oText = "> Statement accepted. Initializing PapaParse engine...";
-        msg.textContent = '';
+        if(msg) msg.textContent = '';
         let i = 0;
         const tw = setInterval(() => {
             if (i < oText.length) { msg.textContent += oText.charAt(i); i++; }
@@ -1663,11 +1663,11 @@ const app = {
 
     parseCSVFile(file) {
         if (typeof Papa === 'undefined') {
-            this.csvSysMsg.textContent = "> ERROR: Parser library missing.";
+            if(this.csvSysMsg) this.csvSysMsg.textContent = "> ERROR: Parser library missing.";
             return;
         }
         
-        this.csvSysMsg.textContent = "> Extracting transaction rows...";
+        if(this.csvSysMsg) this.csvSysMsg.textContent = "> Extracting transaction rows...";
         
         Papa.parse(file, {
             header: false,
@@ -1676,14 +1676,14 @@ const app = {
                 this.processCSVData(results.data);
             },
             error: (err) => {
-                this.csvSysMsg.textContent = "> ERROR: " + err.message;
+                if(this.csvSysMsg) this.csvSysMsg.textContent = "> ERROR: " + err.message;
             }
         });
     },
 
     processCSVData(rows) {
         if (!rows || rows.length === 0) {
-            this.csvSysMsg.textContent = "> ERROR: File is empty.";
+            if(this.csvSysMsg) this.csvSysMsg.textContent = "> ERROR: File is empty.";
             return;
         }
 
@@ -1716,11 +1716,11 @@ const app = {
         }
 
         if (headerIdx === -1 || maxScore < 2) {
-            this.csvSysMsg.textContent = "> ERROR: Cannot identify bank statement columns. Ensure Date, Description, and Debit/Credit exist.";
+            if(this.csvSysMsg) this.csvSysMsg.textContent = "> ERROR: Cannot identify bank statement columns. Ensure Date, Description, and Debit/Credit exist.";
             return;
         }
 
-        this.csvSysMsg.textContent = "> Analyzing financial footprint...";
+        if(this.csvSysMsg) this.csvSysMsg.textContent = "> Analyzing financial footprint...";
 
         // 2. Parse exactly what we need
         let totalDebits = 0;
@@ -1756,9 +1756,9 @@ const app = {
         }
 
         // 3. Update Result UI
-        document.getElementById('csv-stat-txns').textContent = validTxns;
-        document.getElementById('csv-stat-debits').textContent = totalDebits.toLocaleString('en-IN', { style: 'currency', currency: 'INR' });
-        document.getElementById('csv-stat-credits').textContent = totalCredits.toLocaleString('en-IN', { style: 'currency', currency: 'INR' });
+        if(document.getElementById('csv-stat-txns')) document.getElementById('csv-stat-txns').textContent = validTxns;
+        if(document.getElementById('csv-stat-debits')) document.getElementById('csv-stat-debits').textContent = totalDebits.toLocaleString('en-IN', { style: 'currency', currency: 'INR' });
+        if(document.getElementById('csv-stat-credits')) document.getElementById('csv-stat-credits').textContent = totalCredits.toLocaleString('en-IN', { style: 'currency', currency: 'INR' });
 
         setTimeout(() => {
             this.switchView('csvResult');
@@ -1779,7 +1779,7 @@ const app = {
     updateChallengePreview() {
         const val = this.inputFriendName.value.trim();
         const pt = document.getElementById('preview-title');
-        pt.textContent = val ? `${val}, you've been challenged.` : `You've been challenged.`;
+        if(pt) pt.textContent = val ? `${val}, you've been challenged.` : `You've been challenged.`;
     },
 
     shareChallenge(tryNative) {
