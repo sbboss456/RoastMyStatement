@@ -1547,21 +1547,24 @@ const app = {
                 appState.shareImageBlob = blob;
                 this.updateShareButton();
                 
-                // UX UPGRADE: Overlay the generated image so users can natively long-press to save on mobile
+                // UX UPGRADE: Overlay the generated image invisibly so users can natively long-press to save on mobile
                 const imgUrl = URL.createObjectURL(blob);
                 const imgElement = document.createElement('img');
                 imgElement.id = 'generated-share-img';
                 imgElement.src = imgUrl;
-                imgElement.className = 'share-card';
+                imgElement.style.position = 'absolute';
+                imgElement.style.top = '0';
+                imgElement.style.left = '0';
                 imgElement.style.width = '100%';
-                imgElement.style.display = 'block';
-                imgElement.style.objectFit = 'contain';
-                imgElement.style.position = 'relative';
+                imgElement.style.height = '100%';
+                // The PNG has the exact same aspect ratio, so cover/contain will fill
+                imgElement.style.objectFit = 'cover';
                 imgElement.style.zIndex = '50';
+                imgElement.style.opacity = '0'; // Invisible but touchable
                 imgElement.alt = 'Financial Personality Share Card';
                 
-                // Hide the HTML card and show the PNG Image
-                cardTarget.style.display = 'none';
+                // Do NOT hide the HTML card, just overlay the invisible image
+                cardTarget.parentNode.style.position = 'relative';
                 cardTarget.parentNode.appendChild(imgElement);
 
             }, 'image/png');
