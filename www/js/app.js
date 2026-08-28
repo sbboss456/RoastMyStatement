@@ -1309,49 +1309,71 @@ const app = {
     },
     // --- TERMINAL & RESULT GENERATION ---
     generatePendingResult() {
-        const scores = appState.scores;
-        const normalized = {};
-        for(let t in appState.maxAbsPossible) {
-            let s = scores[t] || 0; let mx = appState.maxAbsPossible[t]; let mn = appState.minAbsPossible[t];
-            if (mx === mn) { normalized[t] = 50; } else {
-                normalized[t] = Math.max(0, Math.min(100, Math.round(((s - mn) / (mx - mn)) * 100)));
+        console.log('[PERSONALITY] Scores calculated');
+        try {
+            const scores = appState.scores;
+            const normalized = {};
+            for(let t in appState.maxAbsPossible) {
+                let s = scores[t] || 0; let mx = appState.maxAbsPossible[t]; let mn = appState.minAbsPossible[t];
+                if (mx === mn) { normalized[t] = 50; } else {
+                    normalized[t] = Math.max(0, Math.min(100, Math.round(((s - mn) / (mx - mn)) * 100)));
+                }
             }
+
+            let wScore = 100; let wTrait = 'default';
+            let sScore = 0; let sTrait = 'default';
+
+            const evalTrait = (t, isGoodIfHigh) => {
+                if (normalized[t] === undefined) return;
+                const valGood = isGoodIfHigh ? normalized[t] : (100 - normalized[t]);
+                if (valGood < wScore || wTrait === 'default') { wScore = valGood; wTrait = t; }
+                if (valGood > sScore || sTrait === 'default') { sScore = valGood; sTrait = t; }
+            };
+
+            ['saving', 'discipline', 'future', 'confidence'].forEach(t => evalTrait(t, true));
+            ['chaos', 'impulse', 'risk', 'lifestyle', 'food', 'digital', 'shopping'].forEach(t => evalTrait(t, false));
+
+            console.log('[PERSONALITY] Strength calculated');
+            console.log('[PERSONALITY] Weakness calculated');
+
+            let foundPersonality = PERSONALITIES[PERSONALITIES.length - 1];
+            for (const p of PERSONALITIES) { if (p.condition(normalized)) { foundPersonality = p; break; } }
+            
+            console.log('[PERSONALITY] Personality classified');
+            
+            let roasts = [];
+            if(window.ROAST_LIBRARY && window.ROAST_LIBRARY.generateMultiRoast) {
+                 roasts = window.ROAST_LIBRARY.generateMultiRoast(foundPersonality.id, sTrait, wTrait);
+            } else {
+                 roasts = [foundPersonality.desc, "You are fundamentally reckless with capital.", "Your financial priorities require a hard reboot."];
+            }
+
+            console.log('[PERSONALITY] Roast 1 generated');
+            console.log('[PERSONALITY] Roast 2 generated');
+            console.log('[PERSONALITY] Roast 3 generated');
+
+            const traitDisplayMap = { chaos: "Pure Chaos", impulse: "Impulse Control", saving: "Savings Focus", discipline: "Total Discipline", risk: "Risk Appetite", lifestyle: "Lifestyle Needs", future: "Future Planning", confidence: "Money Logic", food: "Food Dependencies", digital: "Digital Hoarding", shopping: "Consumer Traps", default: "Average Hustle", social: "Peer Pressures", travel: "Wanderlust Spend", debt: "Debt Cycle", emergency: "Panic Modes" };
+            const stStr = traitDisplayMap[sTrait] || sTrait;
+            const wStr = traitDisplayMap[wTrait] || wTrait;
+
+            appState.pendingResult = {
+                persona: foundPersonality,
+                roasts: roasts,
+                normalized: normalized,
+                strengthStr: stStr,
+                weaknessStr: wStr
+            };
+            console.log('[PERSONALITY] Result object created');
+        } catch (e) {
+            console.error('[PERSONALITY] ERROR:', e);
+            appState.pendingResult = {
+                persona: PERSONALITIES[PERSONALITIES.length - 1],
+                roasts: ["We couldn't diagnose you.", "You broke our math engine.", "Good job surviving."],
+                normalized: {},
+                strengthStr: "Unknown",
+                weaknessStr: "Unknown"
+            };
         }
-
-        let wScore = 100; let wTrait = 'default';
-        let sScore = 0; let sTrait = 'default';
-
-        const evalTrait = (t, isGoodIfHigh) => {
-            if (normalized[t] === undefined) return;
-            const valGood = isGoodIfHigh ? normalized[t] : (100 - normalized[t]);
-            if (valGood < wScore || wTrait === 'default') { wScore = valGood; wTrait = t; }
-            if (valGood > sScore || sTrait === 'default') { sScore = valGood; sTrait = t; }
-        };
-
-        ['saving', 'discipline', 'future', 'confidence'].forEach(t => evalTrait(t, true));
-        ['chaos', 'impulse', 'risk', 'lifestyle', 'food', 'digital', 'shopping'].forEach(t => evalTrait(t, false));
-
-        let foundPersonality = PERSONALITIES[PERSONALITIES.length - 1];
-        for (const p of PERSONALITIES) { if (p.condition(normalized)) { foundPersonality = p; break; } }
-        
-        let roasts = [];
-        if(window.ROAST_LIBRARY && window.ROAST_LIBRARY.generateMultiRoast) {
-             roasts = window.ROAST_LIBRARY.generateMultiRoast(foundPersonality.id, sTrait, wTrait);
-        } else {
-             roasts = [foundPersonality.desc, "You are fundamentally reckless with capital.", "Your financial priorities require a hard reboot."];
-        }
-
-        const traitDisplayMap = { chaos: "Pure Chaos", impulse: "Impulse Control", saving: "Savings Focus", discipline: "Total Discipline", risk: "Risk Appetite", lifestyle: "Lifestyle Needs", future: "Future Planning", confidence: "Money Logic", food: "Food Dependencies", digital: "Digital Hoarding", shopping: "Consumer Traps", default: "Average Hustle", social: "Peer Pressures", travel: "Wanderlust Spend", debt: "Debt Cycle", emergency: "Panic Modes" };
-        const stStr = traitDisplayMap[sTrait] || sTrait;
-        const wStr = traitDisplayMap[wTrait] || wTrait;
-
-        appState.pendingResult = {
-            persona: foundPersonality,
-            roasts: roasts,
-            normalized: normalized,
-            strengthStr: stStr,
-            weaknessStr: wStr
-        };
     },
 
     runTerminalAnimation() {
@@ -1372,6 +1394,7 @@ const app = {
                 const terminalBox = document.querySelector('.terminal-box');
                 if (terminalBox) terminalBox.scrollTop = terminalBox.scrollHeight;
             } else {
+                console.log('[PERSONALITY] Diagnostic completed');
                 clearInterval(appState.terminalTimer);
                 appState.terminalTimer = null;
                 appState.terminalTimeout = setTimeout(() => this.showDeterminedResult(), 800);
@@ -1380,13 +1403,21 @@ const app = {
     },
 
     showDeterminedResult() {
-        if (!appState.pendingResult) return;
+        console.log('[PERSONALITY] Result navigation started');
+        if (!appState.pendingResult) {
+            console.error('[PERSONALITY] Cannot transition: Pending result missing.');
+            return;
+        }
         const p = appState.pendingResult;
+        console.log('[PERSONALITY] Result state updated');
         this.renderResultUI(p.persona, p.roasts, p.normalized, p.strengthStr, p.weaknessStr);
         this.switchView('result');
+        console.log('[PERSONALITY] Result navigation completed');
     },
 
     finishQuiz() {
+        console.log('[PERSONALITY] Test completed');
+        console.log('[PERSONALITY] Answers received');
         this.progressBar.style.width = `100%`;
         
         // Save seen IDs
@@ -1399,7 +1430,16 @@ const app = {
         // Deterministically build the result BEFORE transitioning screens to avoid lock states
         this.generatePendingResult();
 
-        setTimeout(() => { this.switchView('analyzing'); this.runTerminalAnimation(); }, 300);
+        if(!appState.pendingResult) {
+            console.error('[PERSONALITY] Fatal Lock prevented. Result Object missing!');
+            return;
+        }
+
+        setTimeout(() => { 
+            console.log('[PERSONALITY] Diagnostic started');
+            this.switchView('analyzing'); 
+            this.runTerminalAnimation(); 
+        }, 300);
     },
 
     renderResultUI(persona, roasts, scores, strengthStr, weaknessStr) {
