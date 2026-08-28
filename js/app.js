@@ -129,7 +129,10 @@ const appState = {
     scores: { saving: 0, chaos: 0, impulse: 0, food: 0, digital: 0, discipline: 0, risk: 0, lifestyle: 0, confidence: 0, future: 0 },
     maxAbsPossible: { saving: 0, chaos: 0, impulse: 0, food: 0, digital: 0, discipline: 0, risk: 0, lifestyle: 0, confidence: 0, future: 0 },
     minAbsPossible: { saving: 0, chaos: 0, impulse: 0, food: 0, digital: 0, discipline: 0, risk: 0, lifestyle: 0, confidence: 0, future: 0 },
-    shareImageBlob: null
+    shareImageBlob: null,
+    terminalTimer: null,
+    terminalTimeout: null,
+    pendingResult: null
 };
 
 // ==========================================
@@ -1304,36 +1307,8 @@ const app = {
         card.style.opacity = '0'; card.style.transform = 'translateY(-20px)'; card.style.transition = 'all 0.2s';
         setTimeout(() => { appState.currentQuestion++; this.renderQuestion(); }, 200);
     },
-
-    finishQuiz() {
-        this.progressBar.style.width = `100%`;
-        
-        // Save seen IDs
-        try {
-            let seen = JSON.parse(localStorage.getItem('roast_seen_qs')) || [];
-            seen.push(...appState.activeQuizQuestions.map(q => q.id));
-            localStorage.setItem('roast_seen_qs', JSON.stringify([...new Set(seen)]));
-        } catch(e) {}
-
-        setTimeout(() => { this.switchView('analyzing'); this.runTerminalAnimation(); }, 300);
-    },
-
-    // --- TERMINAL & RESULTS ---
-    runTerminalAnimation() {
-        const lines = ["INITIATING DIAGNOSTIC PROTOCOL...", "ANALYZING SPENDING BEHAVIOR...", "CALCULATING IMPULSE DECISIONS...", "WARNING: SELF-CONTROL MODULE NOT FOUND", "CROSS-REFERENCING TERRIBLE CHOICES...", "PERSONALITY DETECTED."];
-        const out = document.getElementById('terminal-output');
-        out.innerHTML = ""; document.getElementById('main-ticker').classList.add('alert-mode');
-        
-        let i = 0;
-        const interval = setInterval(() => {
-            if (i < lines.length) {
-                const p = document.createElement('div'); p.className = 'terminal-line'; p.textContent = `> ${lines[i]}`; out.appendChild(p); i++;
-            } else {
-                clearInterval(interval); setTimeout(() => this.calculateAndShowResult(), 800);
-            }
-        }, 400);
-    },
-    calculateAndShowResult() {
+    // --- TERMINAL & RESULT GENERATION ---
+    generatePendingResult() {
         const scores = appState.scores;
         const normalized = {};
         for(let t in appState.maxAbsPossible) {
@@ -1370,8 +1345,61 @@ const app = {
         const stStr = traitDisplayMap[sTrait] || sTrait;
         const wStr = traitDisplayMap[wTrait] || wTrait;
 
-        this.renderResultUI(foundPersonality, roasts, normalized, stStr, wStr);
+        appState.pendingResult = {
+            persona: foundPersonality,
+            roasts: roasts,
+            normalized: normalized,
+            strengthStr: stStr,
+            weaknessStr: wStr
+        };
+    },
+
+    runTerminalAnimation() {
+        // Prevent concurrent timer ghosts
+        if (appState.terminalTimer) clearInterval(appState.terminalTimer);
+        if (appState.terminalTimeout) clearTimeout(appState.terminalTimeout);
+        
+        const lines = ["INITIATING DIAGNOSTIC PROTOCOL...", "ANALYZING SPENDING BEHAVIOR...", "CALCULATING IMPULSE DECISIONS...", "WARNING: SELF-CONTROL MODULE NOT FOUND", "CROSS-REFERENCING TERRIBLE CHOICES...", "PERSONALITY DETECTED."];
+        const out = document.getElementById('terminal-output');
+        out.innerHTML = ""; 
+        document.getElementById('main-ticker').classList.add('alert-mode');
+        
+        let i = 0;
+        appState.terminalTimer = setInterval(() => {
+            if (i < lines.length) {
+                const p = document.createElement('div'); p.className = 'terminal-line'; p.textContent = `> ${lines[i]}`; out.appendChild(p); i++;
+                // Auto-scroll logic to prevent text escaping green boundaries
+                const terminalBox = document.querySelector('.terminal-box');
+                if (terminalBox) terminalBox.scrollTop = terminalBox.scrollHeight;
+            } else {
+                clearInterval(appState.terminalTimer);
+                appState.terminalTimer = null;
+                appState.terminalTimeout = setTimeout(() => this.showDeterminedResult(), 800);
+            }
+        }, 350);
+    },
+
+    showDeterminedResult() {
+        if (!appState.pendingResult) return;
+        const p = appState.pendingResult;
+        this.renderResultUI(p.persona, p.roasts, p.normalized, p.strengthStr, p.weaknessStr);
         this.switchView('result');
+    },
+
+    finishQuiz() {
+        this.progressBar.style.width = `100%`;
+        
+        // Save seen IDs
+        try {
+            let seen = JSON.parse(localStorage.getItem('roast_seen_qs')) || [];
+            seen.push(...appState.activeQuizQuestions.map(q => q.id));
+            localStorage.setItem('roast_seen_qs', JSON.stringify([...new Set(seen)]));
+        } catch(e) {}
+        
+        // Deterministically build the result BEFORE transitioning screens to avoid lock states
+        this.generatePendingResult();
+
+        setTimeout(() => { this.switchView('analyzing'); this.runTerminalAnimation(); }, 300);
     },
 
     renderResultUI(persona, roasts, scores, strengthStr, weaknessStr) {

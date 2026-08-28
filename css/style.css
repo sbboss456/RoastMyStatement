@@ -581,3 +581,19 @@ body.android-native-app .card-roast-list ul { font-size: 0.7rem; line-height: 1.
 body.android-native-app .card-identity-text p.mb-4 { margin-bottom: 0 !important; }
 body.android-native-app .card-traits { margin-bottom: 0.25rem !important; }
 
+
+/* Terminal text overlap boundaries */
+body.android-native-app .terminal-box {
+    max-height: 50vh !important;
+    overflow-y: auto !important;
+    scroll-behavior: smooth;
+    display: flex;
+    flex-direction: column;
+}
+body.android-native-app .terminal-box #terminal-output {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+}
+
