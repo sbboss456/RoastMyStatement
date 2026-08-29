@@ -1,7 +1,6 @@
-
-        let seenIds = JSON.parse(localStorage.getItem('roast_seen_qs')) || [];
-        appState.activeQuizQuestions = window.APP_DATA.getQuestionsForCountry(appState.country, 15, seenIds);
-gine + Viral Loop (GLOBAL 3.0)
+/**
+ * ROAST MY STATEMENT - FRONTEND APP
+ * Financial Personality Engine + Viral Loop (GLOBAL 3.0)
  */
 
 const PERSONALITIES = [
@@ -1246,22 +1245,12 @@ const app = {
     },
 
     selectDynamicQuestions() {
-        const fullBank = window.QUESTION_BANK || [];
-        if (fullBank.length === 0) return;
+        if (!window.APP_DATA || !window.APP_DATA.getQuestionsForCountry) { console.error("No APP_DATA. Engine crash."); return; }
 
         let seen = [];
         try { seen = JSON.parse(localStorage.getItem('roast_seen_qs')) || []; } catch(e){}
 
-        // Filter unseen, fallback to full bank if running low
-        let available = fullBank.filter(q => !seen.includes(q.id));
-        if (available.length < 15) {
-            seen = []; 
-            available = [...fullBank]; 
-        }
-
-        // Shuffle
-        available = available.sort(() => 0.5 - Math.random());
-        appState.activeQuizQuestions = available.slice(0, 15);
+        appState.activeQuizQuestions = window.APP_DATA.getQuestionsForCountry(appState.country, 15, seen);
 
         // Pre-calculate theoretical limits for normalization mapping
         appState.activeQuizQuestions.forEach(q => {
