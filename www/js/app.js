@@ -1211,7 +1211,7 @@ const app = {
         
         const cd = document.getElementById('settings-country-display');
         if (cd) {
-            cd.value = appState.country === 'NONE' ? 'NONE SELECTED' : (window.APP_DATA.COUNTRIES[appState.country].name + ' (' + window.APP_DATA.COUNTRIES[appState.country].currency + ')');
+            cd.textContent = appState.country === 'NONE' ? 'NONE SELECTED' : (window.APP_DATA.COUNTRIES[appState.country].name + ' (' + window.APP_DATA.COUNTRIES[appState.country].currency + ')');
         }
     },
 

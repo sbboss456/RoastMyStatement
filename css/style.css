@@ -621,3 +621,35 @@ body.android-native-app .terminal-box #terminal-output {
 .country-code { font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; color: var(--accent-acid); opacity: 0.8; }
 .intensity-btn.selected { border-color: var(--accent-acid) !important; color: var(--accent-acid) !important; box-shadow: 0 0 10px rgba(204,255,0,0.2); }
 
+/* Custom Dropdown UI for Settings */
+.custom-dropdown-display {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(204, 255, 0, 0.3);
+    border-radius: 4px;
+    padding: 1rem 1.25rem;
+    color: #fff;
+    font-family: var(--font-mono);
+    font-size: 0.9rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    width: 100%;
+    outline: none;
+}
+.custom-dropdown-display:not(:disabled):hover, .custom-dropdown-display:focus {
+    border-color: var(--accent-acid);
+    box-shadow: 0 0 10px rgba(204, 255, 0, 0.15);
+    background: rgba(204, 255, 0, 0.05);
+}
+.custom-dropdown-display:active {
+    transform: scale(0.98);
+}
+.custom-dropdown-display .dropdown-icon {
+    color: var(--accent-acid);
+    width: 18px;
+    height: 18px;
+    opacity: 0.8;
+}
+
