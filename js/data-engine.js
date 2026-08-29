@@ -366,7 +366,9 @@ const ROAST_ENGINE = {
         return roastsOut;
     }
 }
-\nAPP_DATA.ROAST_ENGINE = ROAST_ENGINE;\nwindow.APP_DATA = APP_DATA;
+
+APP_DATA.ROAST_ENGINE = ROAST_ENGINE;
+window.APP_DATA = APP_DATA;
 console.log(`[DATA ENGINE] Initialized with ${APP_DATA.QUESTIONS.length} Questions for ${Object.keys(COUNTRIES).length} Countries.`);
 
 const SEASONAL = {
