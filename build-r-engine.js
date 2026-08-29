@@ -1,19 +1,8 @@
 const fs = require('fs');
-
 const dataEnginePath = 'js/data-engine.js';
 let js = fs.readFileSync(dataEnginePath, 'utf8');
 
-// Ensure we don't duplicate existing ROAST_DB arrays if we run multiple times
-if(js.includes('const ROASTS_DB')) {
-    console.log('ROASTS_DB already exists. We will overwrite the ROAST_ENGINE block.');
-}
-
-const script = `
-// ==========================================
-// MASSIVE ROAST GENERATOR (41 COUNTRIES * 110 ROASTS = 4500+ ROASTS)
-// ==========================================
-
-const COUNTRIES = ${JSON.stringify({
+const COUNTRIES = {
     US: { name: 'United States', code: 'US', currency: '$', loc: 'en-US', reg: 'NA', ex: { f: 'DoorDash', w: 'Venmo', s: 'Amazon', t: 'Uber', h: 'Thanksgiving/Black Friday', c: 'Taco Bell', m: 'Target', b: 'credit card' } },
     CA: { name: 'Canada', code: 'CA', currency: 'C$', loc: 'en-CA', reg: 'NA', ex: { f: 'SkipTheDishes', w: 'e-Transfer', s: 'Amazon', t: 'Uber', h: 'Boxing Day', c: 'Tim Hortons', m: 'Walmart', b: 'credit card' } },
     GB: { name: 'United Kingdom', code: 'GB', currency: '£', loc: 'en-GB', reg: 'EU', ex: { f: 'Deliveroo', w: 'Monzo', s: 'ASOS', t: 'Uber', h: 'Boxing Day', c: 'Greggs', m: 'Tesco', b: 'overdraft' } },
@@ -34,7 +23,7 @@ const COUNTRIES = ${JSON.stringify({
     CZ: { name: 'Czech Republic', code: 'CZ', currency: 'Kč', loc: 'cs-CZ', reg: 'EU', ex: { f: 'DameJidlo', w: 'Revolut', s: 'Alza', t: 'Bolt', h: 'Slevy', c: 'Smažák', m: 'Kaufland', b: 'card' } },
     RO: { name: 'Romania', code: 'RO', currency: 'lei', loc: 'ro-RO', reg: 'EU', ex: { f: 'Tazz', w: 'Revolut', s: 'eMAG', t: 'Bolt', h: 'Black Friday', c: 'Shaorma', m: 'Mega Image', b: 'card' } },
     HU: { name: 'Hungary', code: 'HU', currency: 'Ft', loc: 'hu-HU', reg: 'EU', ex: { f: 'Foodora', w: 'Revolut', s: 'eMAG', t: 'Bolt', h: 'Akciók', c: 'Lángos', m: 'Spar', b: 'card' } },
-    IN: { name: 'India', code: 'IN', currency: '₹', loc: 'en-IN', reg: 'SA', ex: { f: 'Zomato/Swiggy', w: 'UPI', s: 'Flipkart', t: 'Ola/Rapido', h: 'Diwali', c: 'Pani Puri', m: 'Bazaar', b: 'bank account' } },
+    IN: { name: 'India', code: 'IN', currency: '₹', loc: 'en-IN', reg: 'SA', ex: { f: 'Zomato/Swiggy', w: 'UPI', s: 'Flipkart/Myntra', t: 'Ola/Rapido', h: 'Diwali', c: 'Pani Puri', m: 'Bazaar', b: 'bank account' } },
     SG: { name: 'Singapore', code: 'SG', currency: 'S$', loc: 'en-SG', reg: 'SEA', ex: { f: 'GrabFood', w: 'PayLah', s: 'Shopee', t: 'Grab', h: 'GSS', c: 'Hawker centre', m: 'NTUC', b: 'wallet' } },
     MY: { name: 'Malaysia', code: 'MY', currency: 'RM', loc: 'ms-MY', reg: 'SEA', ex: { f: 'Foodpanda', w: 'Touch n Go', s: 'Shopee', t: 'Grab', h: 'Raya', c: 'Mamak', m: 'Pasar Malam', b: 'wallet' } },
     ID: { name: 'Indonesia', code: 'ID', currency: 'Rp', loc: 'id-ID', reg: 'SEA', ex: { f: 'GoFood', w: 'GoPay/OVO', s: 'Tokopedia', t: 'GoRide', h: 'Lebaran', c: 'Warung', m: 'Indomaret', b: 'wallet' } },
@@ -48,29 +37,25 @@ const COUNTRIES = ${JSON.stringify({
     TR: { name: 'Turkey', code: 'TR', currency: '₺', loc: 'tr-TR', reg: 'ME', ex: { f: 'Yemeksepeti', w: 'Papara', s: 'Trendyol', t: 'Taksi', h: 'Bayram', c: 'Simit', m: 'BIM', b: 'card' } },
     IL: { name: 'Israel', code: 'IL', currency: '₪', loc: 'he-IL', reg: 'ME', ex: { f: 'Wolt', w: 'Bit', s: 'Terminal X', t: 'Gett', h: 'Holidays', c: 'Falafel', m: 'Super-Pharm', b: 'card' } },
     BR: { name: 'Brazil', code: 'BR', currency: 'R$', loc: 'pt-BR', reg: 'LATAM', ex: { f: 'iFood', w: 'Pix', s: 'Mercado Livre', t: 'Uber', h: 'Carnaval', c: 'Coxinha', m: 'Mercado', b: 'conta' } },
-    MX: { name: 'Mexico', code: 'MX', currency: '$', loc: 'es-MX', reg: 'LATAM', ex: { f: 'Rappi', w: 'Transfer', s: 'Mercado Libre', t: 'DiDi', h: 'Buen Fin', c: 'Tacos', m: 'OXXO', b: 'tarjeta' } },
+    MX: { name: 'Mexico', code: 'MX', currency: '$', loc: 'es-MX', reg: 'LATAM', ex: { f: 'Rappi', w: 'Transferencia', s: 'Mercado Libre', t: 'DiDi', h: 'Buen Fin', c: 'Tacos', m: 'OXXO', b: 'tarjeta' } },
     AR: { name: 'Argentina', code: 'AR', currency: '$', loc: 'es-AR', reg: 'LATAM', ex: { f: 'PedidosYa', w: 'MercadoPago', s: 'Mercado Libre', t: 'Cabify', h: 'Hot Sale', c: 'Empanadas', m: 'Kiosco', b: 'tarjeta' } },
     CO: { name: 'Colombia', code: 'CO', currency: '$', loc: 'es-CO', reg: 'LATAM', ex: { f: 'Rappi', w: 'Nequi', s: 'Mercado Libre', t: 'InDrive', h: 'Día sin IVA', c: 'Arepas', m: 'Éxito', b: 'tarjeta' } },
     CL: { name: 'Chile', code: 'CL', currency: '$', loc: 'es-CL', reg: 'LATAM', ex: { f: 'PedidosYa', w: 'Mach', s: 'Falabella', t: 'Uber', h: 'CyberDay', c: 'Completo', m: 'Líder', b: 'tarjeta' } },
     AU: { name: 'Australia', code: 'AU', currency: 'A$', loc: 'en-AU', reg: 'ANZ', ex: { f: 'UberEats', w: 'PayID', s: 'Amazon', t: 'Uber', h: 'Boxing Day', c: 'Maccas', m: 'Woolies', b: 'card' } },
     NZ: { name: 'New Zealand', code: 'NZ', currency: 'NZ$', loc: 'en-NZ', reg: 'ANZ', ex: { f: 'UberEats', w: 'Transfer', s: 'TradeMe', t: 'Uber', h: 'Boxing Day', c: 'Pie', m: 'Countdown', b: 'card' } },
     ZA: { name: 'South Africa', code: 'ZA', currency: 'R', loc: 'en-ZA', reg: 'AF', ex: { f: 'Mr D Food', w: 'EFT', s: 'Takealot', t: 'Uber', h: 'Black Friday', c: 'Gatsby', m: 'Checkers', b: 'card' } }
-}})};
+};
 
 function fmt(val, c) {
-    const f = new Intl.NumberFormat(c.loc, { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(val).replace(/\\s/g, '');
+    const f = new Intl.NumberFormat(c.loc, { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(val).replace(/\s/g, '');
     let sym = c.currency;
     return f.replace('$', sym).replace('US', '').replace('CA', '').replace('A', '').replace('NZ', '');
 }
 
 const R_GENERATORS = [];
-
-// Format: (country_obj, intensity, weakness)
 const addR = (cat, t) => R_GENERATORS.push({ cat, t });
 
-// -------------------------------------------------------------
-// 1. PERSONALITY ROASTS (General behavior targeting)
-// -------------------------------------------------------------
+// 1. PERSONALITY MAPPING
 const persBases = [
     { i: 'MILD', b: "You treat your {b} like it's a social experiment." },
     { i: 'MILD', b: "Your relationship with money is toxic, but at least it's consistent." },
@@ -86,9 +71,7 @@ const persBases = [
 ];
 persBases.forEach(p => addR('PERSONALITY', (c, i) => i === p.i ? p.b.replace('{b}', c.ex.b) : null));
 
-// -------------------------------------------------------------
-// 2. FOOD / APP WEAKNESS ROASTS (Highly local)
-// -------------------------------------------------------------
+// 2. WEAKNESS MAPPING (FOOD)
 const foodBases = [
     { i: 'MILD', b: "{f} considers you a valued, very dependent customer." },
     { i: 'MILD', b: "You'd save more money if you stopped ordering {c} every time you got bored." },
@@ -100,45 +83,31 @@ const foodBases = [
     { i: 'BRUTAL', b: "You are literally eating your future net worth by ordering {c} at 2 AM." },
     { i: 'BRUTAL', b: "Your blood is 90% {f} preservatives and 10% debt." }
 ];
-foodBases.forEach(p => addR('FOOD', (c, i) => i === p.i ? p.b.replace(/\\{f\\}/g, c.ex.f).replace(/\\{c\\}/g, c.ex.c) : null));
+foodBases.forEach(p => addR('FOOD', (c, i) => i === p.i ? p.b.replace(/\{f\}/g, c.ex.f).replace(/\{c\}/g, c.ex.c) : null));
 
-// -------------------------------------------------------------
-// 3. SHOPPING / E-COMMERCE
-// -------------------------------------------------------------
+// WEAKNESS (SHOPPING)
 const shopBases = [
     { i: 'MILD', b: "Your {s} cart is just a wishlist for a life you can't afford." },
-    { i: 'MILD', b: "You think putting things in your {s} cart counts as therapy." },
     { i: 'MILD', b: "You treat {m} like it's an amusement park." },
     { i: 'SAVAGE', b: "Your {s} delivery driver probably hates you." },
     { i: 'SAVAGE', b: "You treat {h} sales like a competitive sport, and you're losing." },
-    { i: 'SAVAGE', b: "You have a Ph.D. in convincing yourself that heavily discounted trash on {s} is an 'investment'." },
     { i: 'BRUTAL', b: "{h} is precisely why you will never own a home." },
-    { i: 'BRUTAL', b: "You're financing a luxury lifestyle on {s} with a survival budget." },
     { i: 'BRUTAL', b: "Your online shopping addiction is the single pillar holding up the {c_name} economy." }
 ];
-shopBases.forEach(p => addR('SHOPPING', (c, i) => i === p.i ? p.b.replace(/\\{s\\}/g, c.ex.s).replace(/\\{m\\}/g, c.ex.m).replace(/\\{h\\}/g, c.ex.h).replace(/\\{c_name\\}/g, c.name) : null));
+shopBases.forEach(p => addR('SHOPPING', (c, i) => i === p.i ? p.b.replace(/\{s\}/g, c.ex.s).replace(/\{m\}/g, c.ex.m).replace(/\{h\}/g, c.ex.h).replace(/\{c_name\}/g, c.name) : null));
 
-// -------------------------------------------------------------
-// 4. DIGITAL PAYMENTS & IMPULSE
-// -------------------------------------------------------------
+// WEAKNESS (IMPULSE / WALLETS)
 const payBases = [
     { i: 'MILD', b: "You use {w} so much I'm surprised your thumbs aren't bleeding." },
-    { i: 'MILD', b: "You treat your {w} balance like infinite video game money." },
     { i: 'MILD', b: "Your {w} transactions are just a series of regretful impulse decisions." },
-    { i: 'MILD', b: "Every time you open {w}, your net worth drops by {m20}." },
     { i: 'SAVAGE', b: "{m500} enters the account and immediately looks for an exit via {w}." },
-    { i: 'SAVAGE', b: "Your impulse control is so weak a slight breeze could convince you to buy a boat on {w}." },
     { i: 'SAVAGE', b: "Your {w} history has more plot twists than your {b}." },
-    { i: 'SAVAGE', b: "You Pix/transfer money out of your account the exact millisecond it arrives." },
     { i: 'BRUTAL', b: "You are bleeding {money} faster than you can top up your {w}." },
-    { i: 'BRUTAL', b: "You're constantly sending {m100} on {w} for things you literally do not understand." },
     { i: 'BRUTAL', b: "You treat {w} requests like infinite debt glitches." }
 ];
-payBases.forEach(p => addR('IMPULSE', (c, i) => i === p.i ? p.b.replace(/\\{w\\}/g, c.ex.w).replace(/\\{b\\}/g, c.ex.b).replace(/\\{m20\\}/g, fmt(20,c)).replace(/\\{m500\\}/g, fmt(500,c)).replace(/\\{m100\\}/g, fmt(100,c)).replace(/\\{money\\}/g, c.currency) : null));
+payBases.forEach(p => addR('IMPULSE', (c, i) => i === p.i ? p.b.replace(/\{w\}/g, c.ex.w).replace(/\{b\}/g, c.ex.b).replace(/\{m500\}/g, fmt(500, c)).replace(/\{money\}/g, c.currency) : null));
 
-// -------------------------------------------------------------
-// 5. REGIONAL OVERLAYS (Specific logic)
-// -------------------------------------------------------------
+// 3. REGION SPECIFIC OVERLAYS
 const regionBases = [
     { reg: 'IN', i: 'MILD', b: "Bhai, savings account mein {m100} pade hain aur confidence {m100k} ka hai." },
     { reg: 'IN', i: 'SAVAGE', b: "You treat Blinkit/Zepto like your own personal pantry. It concerns us." },
@@ -154,34 +123,51 @@ const regionBases = [
     { reg: 'ME', i: 'SAVAGE', b: "You live like an oil baron on an intern's salary." },
     { reg: 'AF', i: 'SAVAGE', b: "Your bank account empties before the loadshedding ends." }
 ];
-regionBases.forEach(p => addR('REGION', (c, i) => (c.reg === p.reg || c.code === p.reg) && i === p.i ? p.b.replace(/\\{f\\}/g, c.ex.f).replace(/\\{t\\}/g, c.ex.t).replace(/\\{c\\}/g, c.ex.c).replace(/\\{b\\}/g, c.ex.b).replace(/\\{m100\\}/g, fmt(100,c)).replace(/\\{m100k\\}/g, fmt(100000,c)).replace(/\\{m40\\}/g, fmt(40,c)) : null));
+regionBases.forEach(p => addR('REGION', (c, i) => (c.reg === p.reg || c.code === p.reg) && i === p.i ? p.b.replace(/\{f\}/g, c.ex.f).replace(/\{t\}/g, c.ex.t).replace(/\{c\}/g, c.ex.c).replace(/\{b\}/g, c.ex.b).replace(/\{m100\}/g, fmt(100, c)).replace(/\{m100k\}/g, fmt(100000, c)).replace(/\{m40\}/g, fmt(40, c)) : null));
 
-// Multiply permutations heavily contextually
-const contexts = ['chaos', 'saving', 'lifestyle', 'digital', 'risk', 'future', 'social', 'entertainment', 'travel', 'transport', 'convenience', 'fomo', 'debt'];
-const tempBases = [
-    { c: 'chaos', i: 'MILD', b: "You manage money purely on vibes and aggressive delusion." },
-    { c: 'saving', i: 'SAVAGE', b: "Your savings account is literally just a myth at this point." },
-    { c: 'lifestyle', i: 'BRUTAL', b: "You are financing a luxury lifestyle on a survival budget." },
-    { c: 'digital', i: 'SAVAGE', b: "You buy digital assets while your real-life assets rapidly depreciate." },
-    { c: 'risk', i: 'BRUTAL', b: "You treat financial risk like it's a minor inconvenience rather than impending doom." },
-    { c: 'future', i: 'SAVAGE', b: "You plan your finances like the world is ending next Thursday." },
-    { c: 'social', i: 'SAVAGE', b: "You are singlehandedly funding the social lives of your entire friend group." },
-    { c: 'subscription', i: 'BRUTAL', b: "Your stray subscriptions have completely formed their own independent economy." },
-    { c: 'debt', i: 'BRUTAL', b: "You view the words 'Minimum Due' as a lifestyle choice." },
-    { c: 'fomo', i: 'SAVAGE', b: "You buy things simply because someone else has them. It's tragic." }
-];
-tempBases.forEach(p => addR(p.c.toUpperCase(), (c, i) => i === p.i ? p.b : null));
+// Additional Contextual Multipliers to hit 100+ native roasts
+for (let j = 1; j < 60; j++) {
+    R_GENERATORS.push({ cat: 'PROCEDURAL_MILD', t: (c, i) => {
+        if (i !== 'MILD') return null;
+        let p1 = ['screaming for help', 'quietly judging you', 'forming a support group', 'filing for bankruptcy'];
+        let wR = ['is constantly', 'seems to be', 'literally is', 'somehow ends up'];
+        if (j % 4 === 0) return `Your ${c.ex.w} balance ${wR[Math.floor(j/4)%4]} ${p1[j%4]}.`;
+        if (j % 4 === 1) return `You somehow justify spending ${fmt(10*j, c)} on ${c.ex.f} when you could have saved it.`;
+        if (j % 4 === 2) return `The ${c.ex.h} sales got you again, didn't they?`;
+        if (j % 4 === 3) return `I see you transferring ${fmt(15*j, c)} out of your savings. We all see it.`;
+    }});
 
-// To ensure we cross 100+ native roasts per country, we will generate procedural local variants!
-for (let j = 0; j < 30; j++) {
-    // Generate nuanced combinations leveraging local keys
-    R_GENERATORS.push({ cat: 'PROCEDURAL', t: (c, i) => {
-        if (i === 'MILD') return j % 2 === 0 ? \`Your \${c.ex.w} balance is constantly screaming for help.\` : \`You somehow justify spending \${fmt(20*(j+1), c)} on \${c.ex.f}.\`;
-        if (i === 'SAVAGE') return j % 2 === 0 ? \`If I had a \${c.currency} for every bad decision you made on \${c.ex.s}, I would be rich.\` : \`You actively avoid looking at your \${c.ex.b} because the truth hurts.\`;
-        if (i === 'BRUTAL') return j % 2 === 0 ? \`You'll happily blow \${fmt(100*(j+1), c)} on \${c.ex.h} nonsense but complain about a \${fmt(2, c)} fee.\` : \`\${c.ex.f} should put a plaque with your name on it for paying their CEO's salary.\`;
-        return null;
+    R_GENERATORS.push({ cat: 'PROCEDURAL_SAVAGE', t: (c, i) => {
+        if (i !== 'SAVAGE') return null;
+        if (j % 4 === 0) return `If I had a ${c.currency} for every bad decision you made on ${c.ex.s}, I'd be richer than you.`;
+        if (j % 4 === 1) return `You actively avoid looking at your ${c.ex.b} because you already know it's a disaster.`;
+        if (j % 4 === 2) return `You treat ${c.ex.w} like infinite video game money, but life has no respawns.`;
+        if (j % 4 === 3) return `You complain about being broke but still managed to order ${c.ex.f} three times this week.`;
+    }});
+
+    R_GENERATORS.push({ cat: 'PROCEDURAL_BRUTAL', t: (c, i) => {
+        if (i !== 'BRUTAL') return null;
+        if (j % 4 === 0) return `You'll happily blow ${fmt(50*j, c)} on ${c.ex.h} nonsense but complain about a ${fmt(2, c)} convenience fee.`;
+        if (j % 4 === 1) return `${c.ex.f} should put a literal golden plaque with your name on it for paying their CEO's salary.`;
+        if (j % 4 === 2) return `You are the exact reason ${c.ex.b} companies invented late fees. You are their business model.`;
+        if (j % 4 === 3) return `Your financial timeline is just a brutal, unbroken chain of completely avoidable ${fmt(100*j, c)} mistakes.`;
     }});
 }
+
+const weakTags = ['chaos', 'impulse', 'saving', 'food', 'digital', 'lifestyle'];
+weakTags.forEach(w => {
+    for (let k = 0; k < 10; k++) {
+        R_GENERATORS.push({ cat: w.toUpperCase(), t: (c, i) => {
+            if(w === 'chaos') return i === 'BRUTAL' ? `You navigate your finances with the strategic grace of a blindfolded pigeon.` : `Chaos isn't just your spending habit; it's your entire ${c.ex.b} strategy.`;
+            if(w === 'impulse') return i === 'SAVAGE' ? `You've never met a ${fmt(30*k+15, c)} purchase on ${c.ex.s} you could resist.` : null;
+            if(w === 'saving') return i === 'BRUTAL' ? `If saving money was an Olympic sport, you would be disqualified for taking an ${c.ex.t} to the starting line.` : null;
+            if(w === 'food') return i === 'SAVAGE' ? `You are emotionally dependent on ${c.ex.f} and it shows.` : null;
+            if(w === 'lifestyle') return i === 'MILD' ? `You like to live like a billionaire on Friday and eat ${c.ex.c} on Monday.` : null;
+            if(w === 'digital') return i === 'BRUTAL' ? `Your digital subscriptions on ${c.ex.w} are parasitically draining your actual physical life.` : null;
+            return null;
+        }});
+    }
+});
 
 const FINAL_ROASTS = [];
 
@@ -190,35 +176,40 @@ for (const [code, cData] of Object.entries(COUNTRIES)) {
     ['MILD', 'SAVAGE', 'BRUTAL'].forEach(intensity => {
         R_GENERATORS.forEach(gen => {
             let str = gen.t(cData, intensity);
-            if (str && !FINAL_ROASTS.find(r => r.roast === str && r.country === code && r.intensity === intensity)) {
+            if (str && !FINAL_ROASTS.find(r => r.roast === str && r.country === code)) {
                 FINAL_ROASTS.push({
-                    id: \`\${code}_R\${intensity.charAt(0)}_\${rIdCounter++}\`,
+                    id: `${code}_R${intensity.charAt(0)}_${rIdCounter++}`,
                     country: code,
                     category: gen.cat,
                     intensity: intensity,
-                    weakness: gen.cat.toLowerCase(),
+                    weakness: gen.cat.includes('PROC') ? 'default' : gen.cat.toLowerCase(),
                     roast: str
                 });
             }
         });
     });
 }
-`;
 
-fs.writeFileSync('build-r-engine.js', script + `
 console.log("Synthesized " + FINAL_ROASTS.length + " unique localized roasts across 41 countries.");
 
-let dataCode = fs.readFileSync(dataEnginePath, 'utf8');
-
 // Scrub existing ROAST_ENGINE block completely
-const startIdx = dataCode.indexOf('const ROAST_ENGINE = {');
+const startIdx = js.indexOf('const LOCAL_ROASTS_DB =');
+let scrubbedJs = js;
 if (startIdx > -1) {
-    const endPatch = "window.APP_DATA.ROAST_ENGINE = ROAST_ENGINE;";
-    const endIdx = dataCode.indexOf(endPatch) + endPatch.length;
-    dataCode = dataCode.substring(0, startIdx) + dataCode.substring(endIdx);
+    const endStr = 'window.APP_DATA.ROAST_ENGINE = ROAST_ENGINE;';
+    const endPatch = js.indexOf(endStr) + endStr.length;
+    scrubbedJs = js.substring(0, startIdx) + js.substring(endPatch);
+} else {
+    // try finding the original ROAST_ENGINE string
+    const s2 = js.indexOf('const ROAST_ENGINE = {');
+    if (s2 > -1) {
+        const endStr = 'window.APP_DATA.ROAST_ENGINE = ROAST_ENGINE;';
+        const endPatch = js.indexOf(endStr) + endStr.length;
+        scrubbedJs = js.substring(0, s2) + js.substring(endPatch);
+    }
 }
 
-const injection = \`const LOCAL_ROASTS_DB = \${JSON.stringify(FINAL_ROASTS)};
+const injection = `const LOCAL_ROASTS_DB = ${JSON.stringify(FINAL_ROASTS, null, 2)};
 
 const ROAST_ENGINE = {
     ROASTS: LOCAL_ROASTS_DB,
@@ -227,35 +218,57 @@ const ROAST_ENGINE = {
         let pool = this.ROASTS.filter(r => r.country === countryCode);
         if (pool.length === 0) pool = this.ROASTS.filter(r => r.country === 'US'); // fallback
 
+        // Intensity filter mapping
+        let activePool = pool.filter(r => r.intensity === intensity);
+        if(activePool.length === 0) activePool = pool;
+
         // 1. Get Personality/General Roast
-        let pPool = pool.filter(r => r.category === 'PERSONALITY' || r.category === 'PROCEDURAL');
-        let r1 = pPool.length ? pPool[Math.floor(Math.random() * pPool.length)] : pool[0];
+        let pPool = activePool.filter(r => r.category === 'PERSONALITY' || r.category.includes('PROCEDURAL'));
+        let r1 = pPool.length ? pPool[Math.floor(Math.random() * pPool.length)] : activePool[0];
 
-        // 2. Get Country/Region Context Roast
-        let cPool = pool.filter(r => r.category === 'REGION' || r.category === 'PROCEDURAL');
-        let r2 = cPool.length ? cPool[Math.floor(Math.random() * cPool.length)] : pool[1 % pool.length];
-
-        // 3. Get Weakness Roast
+        // 2. Get Weakness Roast
         let wt = String(wTrait).toUpperCase() || 'CHAOS';
-        let wPool = pool.filter(r => r.category.includes(wt) || r.weakness === wt.toLowerCase());
-        // Fallback to intense procedural if weakness pool is exhausted
-        if (wPool.length === 0) wPool = pool.filter(r => r.intensity === 'BRUTAL' || r.intensity === intensity);
-        let r3 = wPool.length ? wPool[Math.floor(Math.random() * wPool.length)] : pool[2 % pool.length];
-
-        // Ensure exactly 3 strings are yielded and unique in the payload
-        let selected = [...new Set([r1 ? r1.roast : "You broke our systems.", r2 ? r2.roast : "Stop spending.", r3 ? r3.roast : "Get a budget."])];
+        let wPool = activePool.filter(r => r.category === wt || r.weakness === wt.toLowerCase());
         
-        while(selected.length < 3) {
-            selected.push(pool[Math.floor(Math.random() * pool.length)].roast);
-            selected = [...new Set(selected)];
+        let r3 = wPool.length ? wPool[Math.floor(Math.random() * wPool.length)] : activePool[2 % activePool.length];
+
+        // 3. Get Alternative String
+        let selectedStrings = [...new Set([
+            r1 ? r1.roast : "Your decisions offend us.", 
+            r3 ? r3.roast : "We have no words."
+        ])];
+        
+        let safeCounter = 0;
+        
+        // Grab recently seen roasts to avoid repetitive hits
+        let seenArr = [];
+        try { seenArr = JSON.parse(localStorage.getItem('roast_seen_strings')) || []; } catch(e){}
+
+        // Smart randomization prioritizing unseen
+        while(selectedStrings.length < 3 && safeCounter < 50) {
+            let candidate = activePool[Math.floor(Math.random() * activePool.length)].roast;
+            if (!seenArr.includes(candidate)) {
+                selectedStrings.push(candidate);
+                selectedStrings = [...new Set(selectedStrings)];
+            }
+            safeCounter++;
         }
         
-        return selected.slice(0, 3);
+        // Fallback if we struggled to find unseen
+        while(selectedStrings.length < 3) {
+            selectedStrings.push(activePool[Math.floor(Math.random() * activePool.length)].roast);
+            selectedStrings = [...new Set(selectedStrings)];
+        }
+        
+        // Update seen
+        let newSeen = [...new Set([...seenArr, ...selectedStrings])].slice(-100);
+        try { localStorage.setItem('roast_seen_strings', JSON.stringify(newSeen)); } catch(e){}
+        
+        return selectedStrings.slice(0, 3);
     }
 };
-window.APP_DATA.ROAST_ENGINE = ROAST_ENGINE;\`;
+window.APP_DATA.ROAST_ENGINE = ROAST_ENGINE;`;
 
-dataCode += '\\n' + injection;
-fs.writeFileSync(dataEnginePath, dataCode);
-console.log('✅ Injected 4000+ Native Roasts into data-engine.js');
-`);
+scrubbedJs += '\n' + injection;
+fs.writeFileSync(dataEnginePath, scrubbedJs);
+console.log('✅ Injected Native Roasts Database successfully.');
