@@ -1,134 +1,29 @@
-/**
- * ROAST MY STATEMENT - FRONTEND APP
- * Financial Personality Engine + Viral Loop
+
+        let seenIds = JSON.parse(localStorage.getItem('roast_seen_qs')) || [];
+        appState.activeQuizQuestions = window.APP_DATA.getQuestionsForCountry(appState.country, 15, seenIds);
+gine + Viral Loop (GLOBAL 3.0)
  */
 
-// ==========================================
-// DATA STRUCTURES
-// ==========================================
-const QUESTIONS = [
-    {
-        id: "q1",
-        text: "You suddenly get ₹5,000 extra. What's your very first thought?",
-        options: [
-            { text: "A. Straight into the savings account.", impact: { saving: 10, chaos: -5, impulse: -10 } },
-            { text: "B. Let's see what I can buy online right now.", impact: { impulse: 15, digital: 5, chaos: 5 } },
-            { text: "C. Food. Obviously.", impact: { food: 15, impulse: 5 } },
-            { text: "D. Give it to my pending debts.", impact: { saving: 5, chaos: -2 } },
-            { text: "E. Wait... I already spent it somehow.", impact: { chaos: 20, impulse: 10 } }
-        ]
-    },
-    {
-        id: "q2",
-        text: "It's the end of the month and you still have money left. What happened?",
-        options: [
-            { text: "A. It's called budgeting.", impact: { saving: 15, chaos: -10 } },
-            { text: "B. I was too busy to spend it.", impact: { chaos: -5 } },
-            { text: "C. That literally never happens to me.", impact: { chaos: 15, impulse: 10 } },
-            { text: "D. I forgot to pay a bill.", impact: { chaos: 10, digital: 5 } }
-        ]
-    },
-    {
-        id: "q3",
-        text: "Your friend says: 'Let's order food.' Your reaction?",
-        options: [
-            { text: "A. 'I already ate.' (Lies to save money)", impact: { saving: 10, food: -5 } },
-            { text: "B. 'Only if we split it evenly.'", impact: { saving: 5 } },
-            { text: "C. 'I'll pay! Let's get the large.'", impact: { food: 10, impulse: 10, chaos: 5 } },
-            { text: "D. 'I already ordered 5 minutes ago.'", impact: { food: 15, impulse: 10 } }
-        ]
-    },
-    {
-        id: "q4",
-        text: "You see something online that you really want, but you don't need it. What happens next?",
-        options: [
-            { text: "A. Close the tab immediately.", impact: { saving: 10, impulse: -10 } },
-            { text: "B. Add to cart. Leave it there for a week.", impact: { impulse: 5 } },
-            { text: "C. Buy it immediately and hope I survive the month.", impact: { impulse: 20, chaos: 15 } },
-            { text: "D. Check if I can pay in 4 installments.", impact: { impulse: 15, chaos: 10, digital: 10 } }
-        ]
-    },
-    {
-        id: "q5",
-        text: "How many digital subscriptions do you currently pay for?",
-        options: [
-            { text: "A. Zero. I pirate everything.", impact: { saving: 10, digital: -10, chaos: 5 } },
-            { text: "B. 1–2. Just the essentials.", impact: { saving: 5, digital: 5 } },
-            { text: "C. 3–5. I need my entertainment.", impact: { digital: 15, impulse: 5 } },
-            { text: "D. I don't know and I am too afraid to look.", impact: { digital: 20, chaos: 15 } }
-        ]
-    },
-    {
-        id: "q6",
-        text: "You have ₹500 left for the whole week. How confident are you?",
-        options: [
-            { text: "A. Easy. I can make it last two weeks.", impact: { saving: 15, chaos: -10 } },
-            { text: "B. Slightly stressed, but manageable.", impact: { saving: 5 } },
-            { text: "C. It'll be gone by Tuesday.", impact: { chaos: 15, impulse: 15 } },
-            { text: "D. I will borrow money from a friend.", impact: { chaos: 10 } }
-        ]
-    },
-    {
-        id: "q7",
-        text: "Be honest: What is your biggest financial weakness?",
-        options: [
-            { text: "A. Food & Delivery apps.", impact: { food: 20 } },
-            { text: "B. Online Shopping / Clothes.", impact: { impulse: 15 } },
-            { text: "C. Video Games & Microtransactions.", impact: { digital: 20 } },
-            { text: "D. Going out / Socializing.", impact: { impulse: 10, chaos: 5 } },
-            { text: "E. Existing.", impact: { chaos: 15 } }
-        ]
-    },
-    {
-        id: "q8",
-        text: "Do you explicitly check your bank balance before spending?",
-        options: [
-            { text: "A. Always. Down to the exact decimal.", impact: { saving: 15, chaos: -15 } },
-            { text: "B. Sometimes.", impact: { saving: 5 } },
-            { text: "C. No. If the card declines, it declines.", impact: { chaos: 20, impulse: 10 } },
-            { text: "D. I actively avoid looking at it.", impact: { chaos: 15 } }
-        ]
-    }
-];
-
 const PERSONALITIES = [
-    {
-        id: "boss", name: "THE FINANCIAL BOSS", icon: "award", desc: "You have terrifyingly good control over your money.",
-        condition: (scores) => scores.saving > 40 && scores.chaos < 30
-    },
-    {
-        id: "foodie", name: "THE FOODIE MENACE", icon: "pizza", desc: "80% of your income is converted directly into calories.",
-        condition: (scores) => scores.food > 30
-    },
-    {
-        id: "goblin", name: "THE DIGITAL GOBLIN", icon: "gamepad-2", desc: "You buy pixels instead of physical possessions.",
-        condition: (scores) => scores.digital > 25
-    },
-    {
-        id: "impulse", name: "THE IMPULSE BUYER", icon: "shopping-bag", desc: "You see it. You like it. You buy it. You regret it.",
-        condition: (scores) => scores.impulse > 40
-    },
-    {
-        id: "menace", name: "THE FINANCIAL MENACE", icon: "flame", desc: "You don't spend money. You release it into the wild.",
-        condition: (scores) => scores.chaos > 45 || (scores.chaos > 30 && scores.impulse > 30)
-    },
-    {
-        id: "default", name: "THE AVERAGE SURVIVOR", icon: "circle-dashed", desc: "You are financially floating. Neither rich nor broke.",
-        condition: () => true
-    }
+    { id: "boss", name: "THE FINANCIAL BOSS", icon: "award", desc: "You have terrifyingly good control over your money.", condition: (scores) => scores.saving > 40 && scores.chaos < 30 },
+    { id: "foodie", name: "THE FOODIE MENACE", icon: "pizza", desc: "80% of your income is converted directly into calories.", condition: (scores) => scores.food > 30 },
+    { id: "goblin", name: "THE DIGITAL GOBLIN", icon: "gamepad-2", desc: "You buy pixels instead of physical possessions.", condition: (scores) => scores.digital > 25 },
+    { id: "impulse", name: "THE IMPULSE BUYER", icon: "shopping-bag", desc: "You see it. You like it. You buy it. You regret it.", condition: (scores) => scores.impulse > 40 },
+    { id: "menace", name: "THE FINANCIAL MENACE", icon: "flame", desc: "You don't spend money. You release it into the wild.", condition: (scores) => scores.chaos > 45 || (scores.chaos > 30 && scores.impulse > 30) },
+    { id: "optimist", name: "THE BLIND OPTIMIST", icon: "sun", desc: "You just assume money will appear when you need it.", condition: (scores) => scores.risk > 40 && scores.chaos > 20 },
+    { id: "default", name: "THE AVERAGE SURVIVOR", icon: "circle-dashed", desc: "You are financially floating. Neither rich nor broke.", condition: () => true }
 ];
 
-// ==========================================
-// STATE MANAGEMENT
-// ==========================================
 const appState = {
     currentQuestion: 0,
     activeQuizQuestions: [],
     isChallenged: false,
     challengerName: null,
-    scores: { saving: 0, chaos: 0, impulse: 0, food: 0, digital: 0, discipline: 0, risk: 0, lifestyle: 0, confidence: 0, future: 0 },
-    maxAbsPossible: { saving: 0, chaos: 0, impulse: 0, food: 0, digital: 0, discipline: 0, risk: 0, lifestyle: 0, confidence: 0, future: 0 },
-    minAbsPossible: { saving: 0, chaos: 0, impulse: 0, food: 0, digital: 0, discipline: 0, risk: 0, lifestyle: 0, confidence: 0, future: 0 },
+    country: localStorage.getItem('roast_country') || 'NONE',
+    roastIntensity: localStorage.getItem('roast_intensity') || 'SAVAGE',
+    scores: { saving:0, chaos:0, impulse:0, food:0, digital:0, discipline:0, risk:0, lifestyle:0, confidence:0, future:0, social:0, health:0, self_awareness:0 },
+    maxAbsPossible: { saving:0, chaos:0, impulse:0, food:0, digital:0, discipline:0, risk:0, lifestyle:0, confidence:0, future:0, social:0, health:0, self_awareness:0 },
+    minAbsPossible: { saving:0, chaos:0, impulse:0, food:0, digital:0, discipline:0, risk:0, lifestyle:0, confidence:0, future:0, social:0, health:0, self_awareness:0 },
     shareImageBlob: null,
     terminalTimer: null,
     terminalTimeout: null,
@@ -185,7 +80,60 @@ const financeManager = {
         return num.toLocaleString('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 });
     },
 
-    openDashboard() {
+    
+
+    renderDailyDilemma() {
+        const wrap = document.getElementById('daily-dilemma-content');
+        if(!wrap) return;
+        
+        let state = JSON.parse(localStorage.getItem('roast_dilemma')) || {};
+        const today = new Date().toISOString().split('T')[0];
+        
+        appState.country = localStorage.getItem('roast_country') || 'GLOBAL';
+
+        if (state.date !== today || !state.qId) {
+            // Pick a new dilemma for today safely
+            let options = null;
+            if(window.APP_DATA) {
+                const pool = window.APP_DATA.getQuestionsForCountry(appState.country, 1);
+                if(pool && pool.length > 0) {
+                   options = pool[0];
+                }
+            }
+            if(!options) { wrap.innerHTML = '<p class="text-muted">No dilemma available today.</p>'; return; }
+            
+            state = { date: today, qId: options.id, text: options.text, opts: options.options, answered: false };
+            localStorage.setItem('roast_dilemma', JSON.stringify(state));
+        }
+
+        if (state.answered) {
+            wrap.innerHTML = `<p class="tech-mono text-muted">> DILEMMA COMPLETED FOR ${today}.</p><p class="mt-2" style="color:var(--accent-acid);">${state.feedback || 'Your choice has been recorded.'}</p>`;
+        } else {
+            let optsHtml = '';
+            state.opts.forEach((o, i) => {
+                optsHtml += `<button class="action-button outline highlight-hover w-full mb-2" onclick="app.finance.answerDilemma(${i})" style="text-align:left; font-size:0.85rem; padding:0.5rem 1rem;">${o.text}</button>`;
+            });
+            wrap.innerHTML = `<p class="display-block mb-4" style="font-size:1.1rem; font-weight:600;">${state.text}</p>${optsHtml}`;
+        }
+    },
+
+    answerDilemma(idx) {
+        let state = JSON.parse(localStorage.getItem('roast_dilemma'));
+        if(!state) return;
+        state.answered = true;
+        const o = state.opts[idx];
+        let feedback = "Neutral decision.";
+        if(o.impact) {
+            if(o.impact.saving > 0) feedback = "You chose the disciplined path.";
+            if(o.impact.chaos > 0) feedback = "Chaos increases.";
+            if(o.impact.impulse > 0) feedback = "Your impulse control is officially compromised.";
+        }
+        state.feedback = feedback;
+        localStorage.setItem('roast_dilemma', JSON.stringify(state));
+        this.renderDailyDilemma();
+    },
+
+openDashboard() {
         app.switchView('finance');
         this.render();
     },
@@ -612,6 +560,7 @@ const financeManager = {
         }
 
         if(window.lucide) window.lucide.createIcons();
+        this.renderDailyDilemma();
     }
 };
 
@@ -1077,6 +1026,8 @@ const app = {
     
     init() {
         this.cacheDOM();
+        this.renderCountryList();
+        this.updateSettingsUI();
         this.checkChallengeURL(); // Check for viral loop params
         this.bindEvents();
         this.initCursor();
@@ -1089,6 +1040,7 @@ const app = {
     cacheDOM() {
         this.views = {
             home: document.getElementById('view-home'),
+            countrySelect: document.getElementById('view-country-select'),
             quiz: document.getElementById('view-quiz'),
             analyzing: document.getElementById('view-analyzing'),
               result: document.getElementById('view-result'),
@@ -1214,7 +1166,72 @@ const app = {
     },
 
     // --- QUIZ FLOW ---
+    
+    // --- Phase 1: COUNTRY & SETTINGS MANAGEMENT ---
+    filterCountries() {
+        const val = (document.getElementById('country-search').value || '').toLowerCase();
+        const items = document.querySelectorAll('.country-item');
+        items.forEach(el => {
+            if(el.dataset.name.toLowerCase().includes(val) || el.dataset.code.toLowerCase().includes(val)) el.style.display = 'flex';
+            else el.style.display = 'none';
+        });
+    },
+
+    selectCountry(code) {
+        document.querySelectorAll('.country-item').forEach(el => {
+            el.classList.remove('selected');
+            if(el.dataset.code === code) el.classList.add('selected');
+        });
+        
+        let cBtn = document.getElementById('btn-confirm-country');
+        cBtn.dataset.code = code;
+        cBtn.disabled = false;
+        cBtn.style.opacity = '1';
+        cBtn.style.pointerEvents = 'auto';
+    },
+
+    confirmCountry() {
+        const code = document.getElementById('btn-confirm-country').dataset.code;
+        if (!code) return;
+        localStorage.setItem('roast_country', code);
+        appState.country = code;
+        this.updateSettingsUI();
+        this.startQuiz(); // Jump to quiz after selection
+    },
+
+    setRoastIntensity(val) {
+        localStorage.setItem('roast_intensity', val);
+        appState.roastIntensity = val;
+        this.updateSettingsUI();
+    },
+
+    updateSettingsUI() {
+        document.querySelectorAll('.intensity-btn').forEach(btn => btn.classList.remove('selected'));
+        let b = document.getElementById('btn-intensity-' + appState.roastIntensity);
+        if (b) b.classList.add('selected');
+        
+        const cd = document.getElementById('settings-country-display');
+        if (cd) {
+            cd.value = appState.country === 'NONE' ? 'NONE SELECTED' : (window.APP_DATA.COUNTRIES[appState.country].name + ' (' + window.APP_DATA.COUNTRIES[appState.country].currency + ')');
+        }
+    },
+
+    renderCountryList() {
+        const con = document.getElementById('country-list-container');
+        if(!con) return;
+        con.innerHTML = '';
+        Object.values(window.APP_DATA.COUNTRIES).forEach(c => {
+            let item = document.createElement('div');
+            item.className = 'country-item';
+            item.dataset.code = c.code; item.dataset.name = c.name;
+            item.onclick = () => this.selectCountry(c.code);
+            item.innerHTML = `<span class="country-name">${c.name}</span><span class="country-code">${c.currency} ${c.code}</span>`;
+            con.appendChild(item);
+        });
+    },
+
     startQuiz() {
+        if (appState.country === "NONE") { this.switchView("countrySelect"); return; }
         // Reset state
         appState.currentQuestion = 0;
         appState.scores = Object.keys(appState.scores).reduce((acc, k) => ({...acc, [k]: 0}), {});
@@ -1461,6 +1478,8 @@ const app = {
         if(document.getElementById('header-main-score')) document.getElementById('header-main-score').textContent = scoreString;
 
         const s = this.settings ? this.settings.settings : null;
+        const edEl = document.getElementById('card-country-edition');
+        if(edEl) edEl.textContent = (appState.country === 'NONE' ? 'GLOBAL' : window.APP_DATA.COUNTRIES[appState.country].name.toUpperCase()) + ' ED.';
         if(s && s.showAvatar) {
             document.getElementById('card-avatar-box').classList.remove('hidden');
             document.getElementById('card-avatar-img').src = s.avatar || defaultAvatarSvg;

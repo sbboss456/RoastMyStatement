@@ -597,3 +597,27 @@ body.android-native-app .terminal-box #terminal-output {
     justify-content: flex-end;
 }
 
+/* Country Select UI */
+.country-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.05);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+.country-item:hover, .country-item.selected {
+    background: rgba(204,255,0,0.1);
+    border-color: var(--accent-acid);
+}
+.country-item.selected {
+    box-shadow: 0 0 10px rgba(204,255,0,0.2) inset;
+}
+.country-flag { font-size: 1.5rem; margin-right: 1rem; }
+.country-name { font-family: 'Space Grotesk', sans-serif; font-weight: 600; flex: 1; }
+.country-code { font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; color: var(--accent-acid); opacity: 0.8; }
+.intensity-btn.selected { border-color: var(--accent-acid) !important; color: var(--accent-acid) !important; box-shadow: 0 0 10px rgba(204,255,0,0.2); }
+
